@@ -161,7 +161,9 @@ import org.tron.protos.Protocol.Transaction;
 import org.tron.protos.Protocol.Transaction.Contract;
 import org.tron.protos.Protocol.TransactionInfo;
 import org.tron.protos.contract.BalanceContract;
-
+import org.tron.streaming.BlockMessageDescriptor;
+import org.tron.streaming.ProtobufMessage;
+import org.tron.streaming.protobuf.TronMessage;
 
 @Slf4j(topic = "DB")
 @Component
@@ -1308,6 +1310,25 @@ public class Manager {
                       chainBaseManager.getDynamicPropertiesStore().getLatestSolidifiedBlockNum();
 
               applyBlock(newBlock, txs);
+
+              TronMessage.BlockHeader blockHeader = TronMessage.BlockHeader.newBuilder()
+                      .setHash(newBlock.getBlockId().getByteString())
+                      .setParentHash(newBlock.getParentBlockId().getByteString())
+                      .setNumber(newBlock.getNum())
+                      .setTimestamp(newBlock.getTimeStamp())
+                      .build();
+
+              TronMessage.BlockMessage blockMessage = TronMessage.BlockMessage.newBuilder()
+                      .setHeader(blockHeader)
+                      .build();
+
+              BlockMessageDescriptor blockMsgDescriptor = new BlockMessageDescriptor();
+              blockMsgDescriptor.setBlockHash(newBlock.getBlockId().toString());
+              blockMsgDescriptor.setBlockNumber(newBlock.getNum());
+
+              ProtobufMessage protobufMessage = new ProtobufMessage(blockMsgDescriptor, blockMessage.toByteArray());
+              protobufMessage.storeMessage(Args.getInstance().streamingDirectory);
+
               tmpSession.commit();
               // if event subscribe is enabled, post block trigger to queue
               postBlockTrigger(newBlock);
