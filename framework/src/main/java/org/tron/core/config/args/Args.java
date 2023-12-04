@@ -98,6 +98,7 @@ public class Args extends CommonParameter {
 
   public static void clearParam() {
     PARAMETER.outputDirectory = "output-directory";
+    PARAMETER.streamingDirectory = "streaming-directory";
     PARAMETER.help = false;
     PARAMETER.witness = false;
     PARAMETER.seedNodes = new ArrayList<>();
@@ -326,12 +327,14 @@ public class Args extends CommonParameter {
     String[] tronOption = new String[] {"version", "help", "shellConfFileName", "logbackPath",
         "eventSubscribe"};
     String[] dbOption = new String[] {"outputDirectory"};
+    String[] streamingOption = new String[] {"streamingDirectory"};
     String[] witnessOption = new String[] {"witness", "privateKey"};
     String[] vmOption = new String[] {"debug"};
 
     Map<String, String[]> optionGroupMap = new LinkedHashMap<>();
     optionGroupMap.put("tron", tronOption);
     optionGroupMap.put("db", dbOption);
+    optionGroupMap.put("streaming", streamingOption);
     optionGroupMap.put("witness", witnessOption);
     optionGroupMap.put("virtual machine", vmOption);
 
@@ -1689,6 +1692,16 @@ public class Args extends CommonParameter {
       return this.outputDirectory + File.separator;
     }
     return this.outputDirectory;
+  }
+
+  /**
+   * get streaming directory.
+   */
+  public String getStreamingDirectory() {
+    if (!this.streamingDirectory.equals("") && !this.streamingDirectory.endsWith(File.separator)) {
+      return this.streamingDirectory + File.separator;
+    }
+    return this.streamingDirectory;
   }
 }
 

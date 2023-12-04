@@ -35,6 +35,9 @@ public class CommonParameter {
   @Parameter(names = {"-d", "--output-directory"},
       description = "Data directory for the databases (default:output-directory)")
   public String outputDirectory = "output-directory";
+  @Parameter(names = {"-sd", "--streaming-directory"},
+      description = "Directory for storing streaming data (default:streaming-directory)")
+  public String streamingDirectory = "streaming-directory";
   @Getter
   @Parameter(names = {"--log-config"}, description = "Logback config file")
   public String logbackPath = "";
