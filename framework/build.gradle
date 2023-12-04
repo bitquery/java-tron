@@ -92,6 +92,7 @@ dependencies {
     compile project(":chainbase")
     compile project(":protocol")
     compile project(":actuator")
+    compile project(":streaming")
     compile project(":consensus")
 }
 

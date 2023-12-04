@@ -46,6 +46,8 @@ src/main/resources/META-INF/
 # output directory
 /output-directory/
 
+/streaming-directory/
+
 /output_manager/
 /output_witness/
 output*

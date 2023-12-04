@@ -1,0 +1,52 @@
+apply plugin: 'com.google.protobuf'
+
+def protobufVersion = '3.21.12'
+def grpcVersion = '1.52.1'
+
+dependencies {
+    compile group: 'com.google.protobuf', name: 'protobuf-java', version: protobufVersion
+    compile group: 'com.google.protobuf', name: 'protobuf-java-util', version: protobufVersion
+    compile group: 'net.jcip', name: 'jcip-annotations', version: '1.0'
+    compile group: 'org.lz4', name: 'lz4-java', version: '1.8.0'
+
+    implementation project(':common')
+    implementation project(':crypto')
+}
+
+tasks.matching { it instanceof Test }.all {
+    testLogging.events = ["failed", "passed", "skipped"]
+}
+
+sourceSets {
+    main {
+        proto {
+            srcDir 'src/main/protos'
+        }
+        java {
+            srcDir 'src/main/gen'
+            srcDir 'src/main/java'
+        }
+    }
+
+}
+
+protobuf {
+    generatedFilesBaseDir = "$projectDir/src/"
+    protoc {
+        artifact = "com.google.protobuf:protoc:${protobufVersion}"
+    }
+
+    generateProtoTasks {
+        all().each { task ->
+            task.builtins {
+                java { outputSubDir = "java" }
+            }
+        }
+    }
+}
+
+clean.doFirst {
+    delete "src/main/java/org/tron/streaming/protobuf"
+    delete "src/main/java/evm_messages"
+}
+
