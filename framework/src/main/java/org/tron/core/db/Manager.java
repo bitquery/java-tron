@@ -129,6 +129,7 @@ import org.tron.core.exception.ValidateSignatureException;
 import org.tron.core.exception.ZksnarkException;
 import org.tron.core.metrics.MetricsKey;
 import org.tron.core.metrics.MetricsUtil;
+import org.tron.core.net.message.adv.BlockMessage;
 import org.tron.core.service.MortgageService;
 import org.tron.core.store.AccountAssetStore;
 import org.tron.core.store.AccountIdIndexStore;
@@ -161,6 +162,7 @@ import org.tron.protos.Protocol.Transaction;
 import org.tron.protos.Protocol.Transaction.Contract;
 import org.tron.protos.Protocol.TransactionInfo;
 import org.tron.protos.contract.BalanceContract;
+import org.tron.streaming.BlockMessageCreator;
 import org.tron.streaming.BlockMessageDescriptor;
 import org.tron.streaming.ProtobufMessage;
 import org.tron.streaming.protobuf.TronMessage;
@@ -1311,16 +1313,9 @@ public class Manager {
 
               applyBlock(newBlock, txs);
 
-              TronMessage.BlockHeader blockHeader = TronMessage.BlockHeader.newBuilder()
-                      .setHash(newBlock.getBlockId().getByteString())
-                      .setParentHash(newBlock.getParentBlockId().getByteString())
-                      .setNumber(newBlock.getNum())
-                      .setTimestamp(newBlock.getTimeStamp())
-                      .build();
-
-              TronMessage.BlockMessage blockMessage = TronMessage.BlockMessage.newBuilder()
-                      .setHeader(blockHeader)
-                      .build();
+              BlockMessageCreator blockMessageCreator = new BlockMessageCreator(newBlock);
+              blockMessageCreator.create();
+              TronMessage.BlockMessage blockMessage = blockMessageCreator.getBlockMessage();
 
               BlockMessageDescriptor blockMsgDescriptor = new BlockMessageDescriptor();
               blockMsgDescriptor.setBlockHash(newBlock.getBlockId().toString());
