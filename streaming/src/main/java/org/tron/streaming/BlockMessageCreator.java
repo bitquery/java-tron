@@ -102,9 +102,10 @@ public class BlockMessageCreator {
                 .setFee(txInfo.getFee())
                 .setIndex(index + 1)
                 .setExpiration(txCap.getExpiration())
-//                .setData(txCapsule.getData())
+                .setData(ByteString.copyFrom(txCap.getData()))
                 .setFeeLimit(txCap.getFeeLimit())
                 .setTimestamp(txCap.getTimestamp())
+                .addAllSignatures(txCap.getInstance().getSignatureList())
                 .build();
 
         return header;
@@ -158,11 +159,10 @@ public class BlockMessageCreator {
         ByteString address = txInfo.getContractAddress();
         String type = txCap.getInstance().getRawData().getContract(0).getType().name();
         String typeUrl = txCap.getInstance().getRawData().getContract(0).getParameter().getTypeUrl();
-//        List<ByteString> contractResult = txInfo.getContractResultList();
 
         Contract contract = Contract.newBuilder()
                 .setAddress(address)
-//                .addExecutionResults(contractResult)
+                .addAllExecutionResults(txInfo.getContractResultList())
                 .setType(type)
                 .setTypeUrl(typeUrl)
                 .build();
