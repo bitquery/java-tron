@@ -38,12 +38,18 @@ public class BlockMessageCreator {
     }
 
     public void create() {
-        setBlockHeader();
-        setBlockWitness();
+        setBlock();
         setTransactions();
     }
 
-    private void setBlockHeader() {
+    private void setBlock() {
+        BlockHeader header = setBlockHeader();
+        Witness witness = setBlockWitness();
+
+        this.blockMessage = this.blockMessage.toBuilder().setHeader(header).setWitness(witness).build();
+    }
+
+    private BlockHeader setBlockHeader() {
         BlockHeader header = BlockHeader.newBuilder()
                 .setNumber(newBlock.getNum())
                 .setHash(newBlock.getBlockId().getByteString())
@@ -54,17 +60,17 @@ public class BlockMessageCreator {
                 .setAccountStateRoot(newBlock.getInstance().getBlockHeader().getRawData().getAccountStateRoot())
                 .build();
 
-        this.blockMessage = this.blockMessage.toBuilder().setHeader(header).build();
+        return header;
     }
 
-    private void setBlockWitness() {
+    private Witness setBlockWitness() {
         Witness witness = Witness.newBuilder()
                 .setAddress(newBlock.getWitnessAddress())
                 .setId(newBlock.getInstance().getBlockHeader().getRawData().getWitnessId())
                 .setSignature(newBlock.getInstance().getBlockHeader().getWitnessSignature())
                 .build();
 
-        this.blockMessage = this.blockMessage.toBuilder().setWitness(witness).build();
+        return witness;
     }
 
     private void setTransactions() {
