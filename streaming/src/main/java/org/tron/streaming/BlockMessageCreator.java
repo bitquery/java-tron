@@ -1,11 +1,14 @@
 package org.tron.streaming;
 
+import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
-import io.netty.channel.SingleThreadEventLoop;
-import lombok.Getter;
-import org.bouncycastle.math.raw.Interleave;
+import com.google.protobuf.Descriptors;
+import com.google.protobuf.Message;
+import org.tron.common.utils.ByteArray;
+import org.tron.core.actuator.TransactionFactory;
 import org.tron.core.capsule.BlockCapsule;
 import org.tron.core.capsule.TransactionCapsule;
+import org.tron.streaming.protobuf.TronMessage.Argument;
 import org.tron.streaming.protobuf.TronMessage.CallValue;
 import org.tron.streaming.protobuf.TronMessage.InternalTransaction;
 import org.tron.streaming.protobuf.TronMessage.Contract;
@@ -20,21 +23,20 @@ import org.tron.streaming.protobuf.TronMessage.BlockMessage;
 import org.tron.protos.Protocol.TransactionInfo;
 import org.tron.protos.Protocol;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class BlockMessageCreator {
 
     private BlockCapsule newBlock;
 
-    @Getter
-    private BlockMessage blockMessage;
+    private BlockMessage.Builder blockMessage;
 
     public BlockMessageCreator(BlockCapsule newBlock) {
         this.newBlock = newBlock;
-
-        BlockMessage.Builder blockBuilder = BlockMessage.newBuilder();
-        this.blockMessage = blockBuilder.build();
+        this.blockMessage = BlockMessage.newBuilder();
     }
 
     public void create() {
@@ -42,11 +44,15 @@ public class BlockMessageCreator {
         setTransactions();
     }
 
+    public BlockMessage getBlockMessage() {
+        return this.blockMessage.build();
+    }
+
     private void setBlock() {
         BlockHeader header = setBlockHeader();
         Witness witness = setBlockWitness();
 
-        this.blockMessage = this.blockMessage.toBuilder().setHeader(header).setWitness(witness).build();
+        this.blockMessage.setHeader(header).setWitness(witness).build();
     }
 
     private BlockHeader setBlockHeader() {
@@ -96,7 +102,7 @@ public class BlockMessageCreator {
                     .addAllInternalTransactions(internalTransactions)
                     .build();
 
-            this.blockMessage = this.blockMessage.toBuilder().addTransactions(tx).build();
+            this.blockMessage.addTransactions(tx).build();
 
             index++;
         }
@@ -162,20 +168,58 @@ public class BlockMessageCreator {
     private List<Contract> getContracts(TransactionInfo txInfo, TransactionCapsule txCap) {
         List<Contract> contracts = new ArrayList();
 
+        Protocol.Transaction.Contract txContract = txCap.getInstance().getRawData().getContract(0);
+
         ByteString address = txInfo.getContractAddress();
-        String type = txCap.getInstance().getRawData().getContract(0).getType().name();
-        String typeUrl = txCap.getInstance().getRawData().getContract(0).getParameter().getTypeUrl();
+        String type = txContract.getType().name();
+        String typeUrl = txContract.getParameter().getTypeUrl();
+        List<Argument> arguments = getArguments(txContract);
 
         Contract contract = Contract.newBuilder()
                 .setAddress(address)
                 .addAllExecutionResults(txInfo.getContractResultList())
                 .setType(type)
                 .setTypeUrl(typeUrl)
+                .addAllArguments(arguments)
                 .build();
 
         contracts.add(contract);
 
         return contracts;
+    }
+
+    private List<Argument> getArguments(Protocol.Transaction.Contract txContract) {
+        List<Argument> arguments = new ArrayList();
+
+        Class clazz = TransactionFactory.getContract(txContract.getType());
+        Any contractParameter = txContract.getParameter();
+
+        Message contractArguments = null;
+        try {
+            contractArguments = contractParameter.unpack(clazz);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Map<Descriptors.FieldDescriptor, Object> fields = contractArguments.getAllFields();
+
+        for (Map.Entry<Descriptors.FieldDescriptor, Object> field : fields.entrySet()){
+            String keyName = field.getKey().getName();
+            Object value = field.getValue();
+
+            Argument.Builder argument = Argument.newBuilder().setName(keyName);
+
+            if(value instanceof ByteString){
+                String decodedValue = ByteArray.toHexString(((ByteString) value).toByteArray());
+                argument.setString(decodedValue);
+            } else if (value instanceof Long) {
+                argument.setUInt((Long) value);
+            }
+
+            arguments.add(argument.build());
+        }
+
+        return arguments;
     }
 
     private List<InternalTransaction> getInternalTransactions(TransactionInfo txInfo) {

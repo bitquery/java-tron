@@ -1,16 +1,18 @@
 apply plugin: 'com.google.protobuf'
 
 def protobufVersion = '3.21.12'
-def grpcVersion = '1.52.1'
+def slf4jVersion = "1.7.25"
 
 dependencies {
     compile group: 'com.google.protobuf', name: 'protobuf-java', version: protobufVersion
     compile group: 'com.google.protobuf', name: 'protobuf-java-util', version: protobufVersion
-    compile group: 'net.jcip', name: 'jcip-annotations', version: '1.0'
     compile group: 'org.lz4', name: 'lz4-java', version: '1.8.0'
+    compile "org.slf4j:jcl-over-slf4j:$slf4jVersion"
 
+    implementation project(':chainbase')
     implementation project(':common')
     implementation project(':crypto')
+    implementation project(':protocol')
 }
 
 tasks.matching { it instanceof Test }.all {
