@@ -8,6 +8,8 @@ import org.tron.common.utils.ByteArray;
 import org.tron.core.actuator.TransactionFactory;
 import org.tron.core.capsule.BlockCapsule;
 import org.tron.core.capsule.TransactionCapsule;
+import org.tron.streaming.protobuf.TronMessage.CancelUnfreezeV2Amount;
+import org.tron.streaming.protobuf.TronMessage.Staking;
 import org.tron.streaming.protobuf.TronMessage.Argument;
 import org.tron.streaming.protobuf.TronMessage.CallValue;
 import org.tron.streaming.protobuf.TronMessage.InternalTransaction;
@@ -92,6 +94,7 @@ public class BlockMessageCreator {
             List<Log> logs = getLogs(txInfo);
             List<Contract> contracts = getContracts(txInfo, txCap);
             List<InternalTransaction> internalTransactions = getInternalTransactions(txInfo);
+            Staking staking = getStaking(txInfo);
 
             Transaction tx = Transaction.newBuilder()
                     .setHeader(header)
@@ -100,6 +103,7 @@ public class BlockMessageCreator {
                     .addAllLogs(logs)
                     .addAllContracts(contracts)
                     .addAllInternalTransactions(internalTransactions)
+                    .setStaking(staking)
                     .build();
 
             this.blockMessage.addTransactions(tx).build();
@@ -259,5 +263,26 @@ public class BlockMessageCreator {
         }
 
         return callValues;
+    }
+
+    private Staking getStaking(TransactionInfo txInfo) {
+        Map<String, Long> cancelUnfreeze = txInfo.getCancelUnfreezeV2AmountMap();
+
+        Staking.Builder staking = Staking.newBuilder();
+
+        staking.setWithdrawAmount(txInfo.getWithdrawAmount())
+                .setUnfreezeAmount(txInfo.getUnfreezeAmount())
+                .setWithdrawExpireAmount(txInfo.getWithdrawExpireAmount());
+
+        for (Map.Entry<String, Long> cu : cancelUnfreeze.entrySet()){
+            CancelUnfreezeV2Amount cancelUnfreezeV2Amount = CancelUnfreezeV2Amount.newBuilder()
+                    .setKey(cu.getKey())
+                    .setValue(cu.getValue())
+                    .build();
+
+            staking.addCancelUnfreezeV2Amounts(cancelUnfreezeV2Amount);
+        }
+
+        return staking.build();
     }
 }
