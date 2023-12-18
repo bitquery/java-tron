@@ -2,9 +2,9 @@ syntax = "proto3";
 
 package tron_messages;
 
-import "evm/block_message.proto";
+import "streaming/evm/block_message.proto";
 
-option java_package = "org.tron.streaming.protobuf";
+option java_package = "org.tron.protos.streaming";
 option java_outer_classname = "TronMessage";
 
 // Tx message
@@ -120,3 +120,7 @@ message BlockMessage {
   Witness Witness = 2;
   repeated Transaction Transactions = 3;
 };
+
+message TestCode {
+  string hello_world = 1;
+}

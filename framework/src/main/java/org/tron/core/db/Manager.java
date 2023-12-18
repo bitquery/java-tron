@@ -165,7 +165,7 @@ import org.tron.protos.contract.BalanceContract;
 import org.tron.streaming.BlockMessageCreator;
 import org.tron.streaming.BlockMessageDescriptor;
 import org.tron.streaming.ProtobufMessage;
-import org.tron.streaming.protobuf.TronMessage;
+import org.tron.protos.streaming.TronMessage;
 
 @Slf4j(topic = "DB")
 @Component
