@@ -31,6 +31,7 @@ import org.tron.core.capsule.AccountCapsule;
 import org.tron.core.capsule.BlockCapsule;
 import org.tron.core.capsule.ContractCapsule;
 import org.tron.core.capsule.ReceiptCapsule;
+import org.tron.core.capsule.EvmTraceCapsule;
 import org.tron.core.db.EnergyProcessor;
 import org.tron.core.db.TransactionContext;
 import org.tron.core.exception.ContractExeException;
@@ -172,6 +173,7 @@ public class VMActuator implements Actuator2 {
     }
 
     ProgramResult result = context.getProgramResult();
+    EvmTraceCapsule evmTraceCap = context.getEvmTraceCapsule();
     try {
       if (program != null) {
         if (null != blockCap && blockCap.generatedByMyself && blockCap.hasWitnessSignature()
@@ -188,6 +190,7 @@ public class VMActuator implements Actuator2 {
 
         VM.play(program, OperationRegistry.getTable());
         result = program.getResult();
+        evmTraceCap = program.getEvmTraceCap();
 
         if (TrxType.TRX_CONTRACT_CREATION_TYPE == trxType && !result.isRevert()) {
           byte[] code = program.getResult().getHReturn();
@@ -283,6 +286,7 @@ public class VMActuator implements Actuator2 {
     }
     //use program returned fill context
     context.setProgramResult(result);
+    context.setEvmTraceCapsule(evmTraceCap);
 
     if (VMConfig.vmTrace() && program != null) {
       String traceContent = program.getTrace()
@@ -401,6 +405,7 @@ public class VMActuator implements Actuator2 {
         programInvoke.setConstantCall();
       }
       this.program = new Program(ops, contractAddress, programInvoke, rootInternalTx);
+      this.program.setEvmTraceCap(new EvmTraceCapsule());
       if (VMConfig.allowTvmCompatibleEvm()) {
         this.program.setContractVersion(1);
       }
@@ -517,6 +522,7 @@ public class VMActuator implements Actuator2 {
       }
       rootInternalTx = new InternalTransaction(trx, trxType);
       this.program = new Program(code, contractAddress, programInvoke, rootInternalTx);
+      this.program.setEvmTraceCap(new EvmTraceCapsule());
       if (VMConfig.allowTvmCompatibleEvm()) {
         this.program.setContractVersion(deployedContract.getContractVersion());
       }

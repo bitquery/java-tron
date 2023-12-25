@@ -21,6 +21,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import evm_messages.BlockMessageOuterClass.Opcode;
+import evm_messages.BlockMessageOuterClass.AddressCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -48,6 +51,7 @@ import org.tron.core.capsule.ContractStateCapsule;
 import org.tron.core.capsule.DelegatedResourceCapsule;
 import org.tron.core.capsule.VotesCapsule;
 import org.tron.core.capsule.WitnessCapsule;
+import org.tron.core.capsule.EvmTraceCapsule;
 import org.tron.core.db.BandwidthProcessor;
 import org.tron.core.db.EnergyProcessor;
 import org.tron.core.exception.ContractExeException;
@@ -143,6 +147,9 @@ public class Program {
   @Getter
   @Setter
   private long callPenaltyEnergy;
+  @Getter
+  @Setter
+  private EvmTraceCapsule evmTraceCap;
 
   public Program(byte[] ops, byte[] codeAddress, ProgramInvoke programInvoke,
                  InternalTransaction internalTransaction) {
@@ -767,6 +774,16 @@ public class Program {
     DataWord energyLimit = this.getCreateEnergy(getEnergyLimitLeft());
     spendEnergy(energyLimit.longValue(), "internal call");
 
+    evmStartOrEnterTrace(
+            senderAddress,
+            newAddress,
+            true,
+            programCode,
+            energyLimit.longValue(),
+            value.getNoLeadZeroesData(),
+            getCurrentOp()
+    );
+
     increaseNonce();
     // [5] COOK THE INVOKE AND EXECUTE
     InternalTransaction internalTx = addInternalTx(null, senderAddress, newAddress, endowment,
@@ -788,6 +805,7 @@ public class Program {
               .toHexString(newAddress)));
     } else if (isNotEmpty(programCode)) {
       Program program = new Program(programCode, newAddress, programInvoke, internalTx);
+      program.setEvmTraceCap(getEvmTraceCap());
       program.setRootTransactionId(this.rootTransactionId);
       if (VMConfig.allowTvmCompatibleEvm()) {
         program.setContractVersion(getContractVersion());
@@ -853,6 +871,8 @@ public class Program {
 
     // 5. REFUND THE REMAIN Energy
     refundEnergyAfterVM(energyLimit, createResult);
+
+    evmEndAndExitTrace(createResult, getCurrentOpIntValue());
   }
 
   public void refundEnergyAfterVM(DataWord energyLimit, ProgramResult result) {
@@ -988,6 +1008,16 @@ public class Program {
       }
     }
 
+    evmStartOrEnterTrace(
+            senderAddress,
+            contextAddress,
+            false,
+            data,
+            msg.getEnergy().longValue(),
+            msg.getEndowment().getNoLeadZeroesData(),
+            msg.getOpCode()
+    );
+
     // CREATE CALL INTERNAL TRANSACTION
     increaseNonce();
     HashMap<String, Long> tokenInfo = new HashMap<>();
@@ -1019,6 +1049,7 @@ public class Program {
         programInvoke.setConstantCall();
       }
       Program program = new Program(programCode, codeAddress, programInvoke, internalTx);
+      program.setEvmTraceCap(getEvmTraceCap());
       program.setRootTransactionId(this.rootTransactionId);
       if (VMConfig.allowTvmCompatibleEvm()) {
         program.setContractVersion(invoke.getDeposit()
@@ -1086,6 +1117,60 @@ public class Program {
     } else {
       refundEnergy(msg.getEnergy().longValue(), "remaining energy from the internal call");
     }
+    
+    evmEndAndExitTrace(callResult, msg.getOpCode());
+  }
+
+  private void evmStartOrEnterTrace(byte[] from, byte[] to, boolean create, byte[] data, long gas, byte[] value, int opCode) {
+    String opcodeName = Op.getNameOf(opCode);
+    byte[] code = getContractState().getCode(to);
+
+    AddressCode addressCodeTo = evmTraceCap.addressCode(ByteString.copyFrom(code), code.length);
+
+    if (opcodeName.contains("CALL") || opcodeName.contains("CREATE") || opcodeName.contains("CREATE2")) {
+      if (getCallDeep() == 0) {
+        evmTraceCap.setCaptureStart(
+                ByteString.copyFrom(from),
+                ByteString.copyFrom(to),
+                create,
+                ByteString.copyFrom(data),
+                gas,
+                ByteString.copyFrom(value),
+                addressCodeTo
+        );
+
+        return;
+      }
+    }
+
+    Opcode opcode = Opcode.newBuilder()
+            .setCode(opCode)
+            .setName(opcodeName)
+            .build();
+
+    evmTraceCap.setCaptureEnter(
+            ByteString.copyFrom(from),
+            ByteString.copyFrom(to),
+            ByteString.copyFrom(data),
+            gas,
+            ByteString.copyFrom(value),
+            opcode,
+            addressCodeTo
+    );
+  }
+ 
+  private void evmEndAndExitTrace(ProgramResult callResult, int opCode) {
+    String opcodeName = Op.getNameOf(opCode);
+
+    if (opcodeName.contains("CALL") || opcodeName.contains("CREATE") || opcodeName.contains("CREATE2")) {
+      if (getCallDeep() == 0) {
+        evmTraceCap.setCaptureEnd(callResult.getEnergyUsed(), callResult.getException());
+
+        return;
+      }
+    }
+
+    evmTraceCap.setCaptureExit(callResult.getEnergyUsed(), callResult.getException());
   }
 
   public void increaseNonce() {

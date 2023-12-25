@@ -4,6 +4,8 @@ import static org.tron.core.Constant.DYNAMIC_ENERGY_FACTOR_DECIMAL;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
+
+import evm_messages.BlockMessageOuterClass.Opcode;
 import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.util.encoders.Hex;
 import org.springframework.util.StringUtils;
@@ -83,6 +85,15 @@ public class VM {
 
           /* check if cpu time out */
           program.checkCPUTimeLimit(opName);
+
+          Opcode opcode = program.getEvmTraceCap().opcode(op.getOpcode(), opName);
+          program.getEvmTraceCap().addCaptureState(
+                  program.getPC(),
+                  opcode,
+                  0,
+                  energy,
+                  program.getCallDeep()
+          );
 
           /* exec op action */
           op.execute(program);
