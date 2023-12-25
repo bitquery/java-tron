@@ -4,6 +4,7 @@ import com.google.protobuf.Any;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
+import evm_messages.BlockMessageOuterClass.Trace;
 import org.tron.common.utils.ByteArray;
 import org.tron.core.actuator.TransactionFactory;
 import org.tron.core.capsule.BlockCapsule;
@@ -87,6 +88,7 @@ public class BlockMessageCreator {
         int index = 0;
         for (TransactionInfo txInfo : txsInfo) {
             TransactionCapsule txCap = newBlock.getTransactions().get(index);
+            Trace evmTrace = txCap.getTrxTrace().getTransactionContext().getEvmTraceCapsule().getInstance();
 
             TransactionHeader header = getTransactionHeader(txInfo, txCap, index);
             TransactionResult result = getTransactionResult(txInfo);
@@ -104,6 +106,7 @@ public class BlockMessageCreator {
                     .addAllContracts(contracts)
                     .addAllInternalTransactions(internalTransactions)
                     .setStaking(staking)
+                    .setTrace(evmTrace)
                     .build();
 
             this.blockMessage.addTransactions(tx).build();
