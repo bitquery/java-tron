@@ -1123,9 +1123,9 @@ public class Program {
 
   private void evmStartOrEnterTrace(byte[] from, byte[] to, boolean create, byte[] data, long gas, byte[] value, int opCode) {
     String opcodeName = Op.getNameOf(opCode);
-    byte[] code = getContractState().getCode(to);
 
-    AddressCode addressCodeTo = evmTraceCap.addressCode(ByteString.copyFrom(code), code.length);
+    byte[] code = getContractState().getCode(to);
+    AddressCode addressCodeTo = evmTraceCap.addressCode(code);
 
     if (opcodeName.contains("CALL") || opcodeName.contains("CREATE") || opcodeName.contains("CREATE2")) {
       if (getCallDeep() == 0) {

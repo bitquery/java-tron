@@ -147,7 +147,9 @@ public class EvmTraceCapsule implements ProtoCapsule<Trace> {
         this.traceBuilder.addCaptureStates(captureState);
     }
 
-    public AddressCode addressCode(ByteString hash, int size) {
+    public AddressCode addressCode(byte[] code) {
+        ByteString hash =  ByteString.copyFrom(code);
+        int size = code.length;
         AddressCode addressCode = AddressCode.newBuilder()
                 .setHash(hash)
                 .setSize(size)
