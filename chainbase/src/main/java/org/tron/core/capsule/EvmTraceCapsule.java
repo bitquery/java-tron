@@ -1,6 +1,7 @@
 package org.tron.core.capsule;
 
 import com.google.protobuf.ByteString;
+import evm_messages.BlockMessageOuterClass.Store;
 import evm_messages.BlockMessageOuterClass.Topic;
 import evm_messages.BlockMessageOuterClass.Log;
 import evm_messages.BlockMessageOuterClass.LogHeader;
@@ -200,6 +201,22 @@ public class EvmTraceCapsule implements ProtoCapsule<Trace> {
                 .build();
 
         this.traceBuilder.setCaptureStates(lastIndex, captureStateWithLog);
+    }
+
+    public void addStorageToCaptureState(byte[] address, byte[] loc, byte[] value) {
+        int lastIndex = this.traceBuilder.getCaptureStatesCount() - 1;
+
+        Store store = Store.newBuilder()
+                .setAddress(ByteString.copyFrom(address))
+                .setLocation(ByteString.copyFrom(loc))
+                .setValue(ByteString.copyFrom(value))
+                .build();
+
+        CaptureState captureStateWithStore = this.traceBuilder.getCaptureStates(lastIndex).toBuilder()
+                .setStore(store)
+                .build();
+
+        this.traceBuilder.setCaptureStates(lastIndex, captureStateWithStore);
     }
 
     private boolean skipOpcode(Opcode opcode) {

@@ -1245,6 +1245,7 @@ public class Program {
     DataWord keyWord = word1.clone();
     DataWord valWord = word2.clone();
     getContractState().putStorageValue(getContextAddress(), keyWord, valWord);
+    evmTraceCap.addStorageToCaptureState(getContextAddress(), keyWord.getData(), valWord.getData());
   }
 
   public byte[] getCode() {
