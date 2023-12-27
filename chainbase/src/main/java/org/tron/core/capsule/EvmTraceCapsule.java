@@ -1,6 +1,9 @@
 package org.tron.core.capsule;
 
 import com.google.protobuf.ByteString;
+import evm_messages.BlockMessageOuterClass.Topic;
+import evm_messages.BlockMessageOuterClass.Log;
+import evm_messages.BlockMessageOuterClass.LogHeader;
 import evm_messages.BlockMessageOuterClass.CaptureExit;
 import evm_messages.BlockMessageOuterClass.CaptureStateHeader;
 import evm_messages.BlockMessageOuterClass.CaptureState;
@@ -12,6 +15,7 @@ import evm_messages.BlockMessageOuterClass.CaptureEnd;
 import evm_messages.BlockMessageOuterClass.CaptureStart;
 import evm_messages.BlockMessageOuterClass.Trace;
 import lombok.extern.slf4j.Slf4j;
+import org.tron.common.runtime.vm.DataWord;
 
 import java.util.Arrays;
 import java.util.List;
@@ -126,7 +130,7 @@ public class EvmTraceCapsule implements ProtoCapsule<Trace> {
             return;
         }
 
-        CaptureStateHeader captureStateHeader = CaptureStateHeader.newBuilder()
+        CaptureStateHeader header = CaptureStateHeader.newBuilder()
                 .setPc(pc)
                 .setOpcode(opcode)
                 .setGas(energy)
@@ -138,7 +142,7 @@ public class EvmTraceCapsule implements ProtoCapsule<Trace> {
                 .build();
 
         CaptureState captureState = CaptureState.newBuilder()
-                .setCaptureStateHeader(captureStateHeader)
+                .setCaptureStateHeader(header)
 //                .setLog()
 //                .setStore()
                 .build();
@@ -150,6 +154,7 @@ public class EvmTraceCapsule implements ProtoCapsule<Trace> {
     public AddressCode addressCode(byte[] code) {
         ByteString hash =  ByteString.copyFrom(code);
         int size = code.length;
+
         AddressCode addressCode = AddressCode.newBuilder()
                 .setHash(hash)
                 .setSize(size)
@@ -167,6 +172,36 @@ public class EvmTraceCapsule implements ProtoCapsule<Trace> {
         return opcode;
     }
 
+    public void addLogToCaptureState(byte[] address, byte[] data, AddressCode addressCode, List<DataWord> topicsData) {
+        int lastIndex = this.traceBuilder.getCaptureStatesCount() - 1;
+
+        LogHeader logHeader = LogHeader.newBuilder()
+                .setAddress(ByteString.copyFrom(address))
+                .setData(ByteString.copyFrom(data))
+                .setAddressCode(addressCode)
+                .build();
+
+        Log.Builder log = Log.newBuilder().setLogHeader(logHeader);
+
+        int index = 0;
+        for (DataWord topicData : topicsData) {
+            Topic topic = Topic.newBuilder()
+                    .setIndex(index)
+                    .setHash(ByteString.copyFrom(topicData.getData()))
+                    .build();
+
+            log.addTopics(topic);
+
+            index++;
+        }
+
+        CaptureState captureStateWithLog = this.traceBuilder.getCaptureStates(lastIndex).toBuilder()
+                .setLog(log)
+                .build();
+
+        this.traceBuilder.setCaptureStates(lastIndex, captureStateWithLog);
+    }
+
     private boolean skipOpcode(Opcode opcode) {
         int code = opcode.getCode();
         String name = opcode.getName();
@@ -177,17 +212,17 @@ public class EvmTraceCapsule implements ProtoCapsule<Trace> {
         }
 
         // Arithmetic operations
-        if(code >= 1 && code <= 11){
+        if (code >= 1 && code <= 11) {
             return true;
         }
 
         // Bitwise, comparison and cryptographic operations
-        if(code >= 16 && code <= 32){
+        if (code >= 16 && code <= 32) {
             return true;
         }
 
         // Push, dup and swap operations
-        if(code >= 95 && code <= 159){
+        if (code >= 95 && code <= 159) {
             return true;
         }
 

@@ -6,6 +6,9 @@ import static org.tron.common.utils.ByteUtil.EMPTY_BYTE_ARRAY;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.google.protobuf.ByteString;
+import evm_messages.BlockMessageOuterClass.AddressCode;
 import org.tron.common.runtime.vm.DataWord;
 import org.tron.common.runtime.vm.LogInfo;
 import org.tron.core.vm.config.VMConfig;
@@ -697,6 +700,14 @@ public class OperationActions {
         new LogInfo(address.getLast20Bytes(), topics, data);
 
     program.getResult().addLogInfo(logInfo);
+
+    byte[] code = program.getContractState().getCode(address.getData());
+    if (code == null) {
+      code = EMPTY_BYTE_ARRAY;
+    }
+    AddressCode addressCode = program.getEvmTraceCap().addressCode(code);
+    program.getEvmTraceCap().addLogToCaptureState(address.getData(), data, addressCode, topics);
+
     program.step();
   }
 
