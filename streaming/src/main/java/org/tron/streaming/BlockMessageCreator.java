@@ -119,7 +119,7 @@ public class BlockMessageCreator {
         TransactionHeader header = TransactionHeader.newBuilder()
                 .setId(txInfo.getId())
                 .setFee(txInfo.getFee())
-                .setIndex(index + 1)
+                .setIndex(index)
                 .setExpiration(txCap.getExpiration())
                 .setData(ByteString.copyFrom(txCap.getData()))
                 .setFeeLimit(txCap.getFeeLimit())
@@ -155,7 +155,7 @@ public class BlockMessageCreator {
     private List<Log> getLogs(TransactionInfo txInfo) {
         List<Log> logs = new ArrayList();
 
-        int index = 1;
+        int index = 0;
         for (TransactionInfo.Log txInfoLog : txInfo.getLogList()) {
             Log log = Log.newBuilder()
                     .setAddress(txInfoLog.getAddress())
@@ -232,7 +232,7 @@ public class BlockMessageCreator {
     private List<InternalTransaction> getInternalTransactions(TransactionInfo txInfo) {
         List<InternalTransaction> internalTransactions = new ArrayList();
 
-        int index = 1;
+        int index = 0;
         for (Protocol.InternalTransaction txInternalTx : txInfo.getInternalTransactionsList()) {
             List<CallValue> callValues = getCallvalues(txInternalTx);
 
