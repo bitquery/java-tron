@@ -121,7 +121,7 @@ public class EvmTraceCapsule implements ProtoCapsule<Trace> {
         }
     }
 
-    public void addCaptureState(int pc, Opcode opcode, long energy, long cost, int depth) {
+    public void addCaptureState(int pc, Opcode opcode, long energy, long cost, int depth, RuntimeException error) {
         if (skipOpcode(opcode)) {
             return;
         }
@@ -132,7 +132,7 @@ public class EvmTraceCapsule implements ProtoCapsule<Trace> {
                 .setGas(energy)
                 .setCost(cost)
                 .setDepth(depth)
-//                .setError()
+                .setError(getErrorString(error))
                 .setEnterIndex(this.enterIndex)
                 .setExitIndex(this.exitIndex)
                 .build();

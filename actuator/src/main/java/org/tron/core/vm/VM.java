@@ -92,7 +92,8 @@ public class VM {
                   opcode,
                   0,
                   energy,
-                  program.getCallDeep()
+                  program.getCallDeep(),
+                  program.getResult().getException()
           );
 
           /* exec op action */
