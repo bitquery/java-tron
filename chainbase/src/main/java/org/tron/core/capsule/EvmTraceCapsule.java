@@ -1,6 +1,8 @@
 package org.tron.core.capsule;
 
 import com.google.protobuf.ByteString;
+import evm_messages.BlockMessageOuterClass.Contract;
+import evm_messages.BlockMessageOuterClass.CaptureFault;
 import evm_messages.BlockMessageOuterClass.Store;
 import evm_messages.BlockMessageOuterClass.Topic;
 import evm_messages.BlockMessageOuterClass.Log;
@@ -152,27 +154,6 @@ public class EvmTraceCapsule implements ProtoCapsule<Trace> {
         this.traceBuilder.addCaptureStates(captureState);
     }
 
-    public AddressCode addressCode(byte[] code) {
-        ByteString hash =  ByteString.copyFrom(code);
-        int size = code.length;
-
-        AddressCode addressCode = AddressCode.newBuilder()
-                .setHash(hash)
-                .setSize(size)
-                .build();
-
-        return addressCode;
-    }
-
-    public Opcode opcode(int code, String name) {
-        Opcode opcode = Opcode.newBuilder()
-                .setCode(code)
-                .setName(name)
-                .build();
-
-        return opcode;
-    }
-
     public void addLogToCaptureState(byte[] address, byte[] data, AddressCode addressCode, List<DataWord> topicsData) {
         int lastIndex = this.traceBuilder.getCaptureStatesCount() - 1;
 
@@ -219,6 +200,66 @@ public class EvmTraceCapsule implements ProtoCapsule<Trace> {
         this.traceBuilder.setCaptureStates(lastIndex, captureStateWithStore);
     }
 
+    public void setCaptureFault(int pc, Opcode opcode, long energy, long cost, int depth, RuntimeException error, List<ByteString> stack, Contract contract, byte[] memory) {
+        CaptureFault captureFault = CaptureFault.newBuilder()
+                .setPc(pc)
+                .setOpcode(opcode)
+                .setGas(energy)
+                .setCost(cost)
+                .addAllStack(stack)
+                .setContract(contract)
+                .setMemory(ByteString.copyFrom(memory))
+                .setDepth(depth)
+                .setError(getErrorString(error))
+                .build();
+
+        this.traceBuilder.setCaptureFault(captureFault);
+    }
+
+    public AddressCode addressCode(byte[] code) {
+        ByteString hash =  ByteString.copyFrom(code);
+        int size = code.length;
+
+        AddressCode addressCode = AddressCode.newBuilder()
+                .setHash(hash)
+                .setSize(size)
+                .build();
+
+        return addressCode;
+    }
+
+    public Opcode opcode(int code, String name) {
+        Opcode opcode = Opcode.newBuilder()
+                .setCode(code)
+                .setName(name)
+                .build();
+
+        return opcode;
+    }
+
+    public Contract contract(byte[] callerAddress, byte[] address, byte[] codeAddr, byte[] value) {
+        // callerAddress and caller are the same fields.
+        Contract contract = Contract.newBuilder()
+                .setCallerAddress(ByteString.copyFrom(callerAddress))
+//                .setCaller()
+                .setAddress(ByteString.copyFrom(address))
+                .setCodeAddr(ByteString.copyFrom(codeAddr))
+//                .setInput()
+                .setValue(ByteString.copyFrom(value))
+                .build();
+
+        return contract;
+    }
+
+    private String getErrorString(RuntimeException error) {
+        if (error != null) {
+            return error.getMessage();
+        }
+
+        return "";
+    }
+
+    // List of opcodes that will not be recorded in captureState
     private boolean skipOpcode(Opcode opcode) {
         int code = opcode.getCode();
         String name = opcode.getName();
@@ -244,14 +285,6 @@ public class EvmTraceCapsule implements ProtoCapsule<Trace> {
         }
 
         return false;
-    }
-
-    private String getErrorString(RuntimeException error) {
-        if (error != null) {
-            return error.getMessage();
-        }
-
-        return "";
     }
 
     @Override

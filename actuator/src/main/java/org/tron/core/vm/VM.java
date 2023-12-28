@@ -22,6 +22,10 @@ public class VM {
       Op.DELEGATECALL, Op.CALLCODE, Op.CALLTOKEN);
 
   public static void play(Program program, JumpTable jumpTable) {
+    Operation op = null;
+    String opName = null;
+    long energy = 0;
+
     try {
       long factor = DYNAMIC_ENERGY_FACTOR_DECIMAL;
       long energyUsage = 0L;
@@ -36,7 +40,7 @@ public class VM {
         }
 
         try {
-          Operation op = jumpTable.get(program.getCurrentOpIntValue());
+          op = jumpTable.get(program.getCurrentOpIntValue());
           if (!op.isEnabled()) {
             throw Program.Exception.invalidOpCode(program.getCurrentOp());
           }
@@ -46,9 +50,9 @@ public class VM {
           program.verifyStackSize(op.getRequire());
           program.verifyStackOverflow(op.getRequire(), op.getRet());
 
-          String opName = Op.getNameOf(op.getOpcode());
+          opName = Op.getNameOf(op.getOpcode());
           /* spend energy before execution */
-          long energy = op.getEnergyCost(program);
+          energy = op.getEnergyCost(program);
           if (VMConfig.allowDynamicEnergy()) {
             long actualEnergy = energy;
             // CALL Ops have special calculation on energy.
@@ -119,6 +123,8 @@ public class VM {
       } else {
         program.setRuntimeFailure(e);
       }
+
+      program.setCaptureFaultTrace(op.getOpcode(), opName, energy);
     } catch (StackOverflowError soe) {
       logger.info("\n !!! StackOverflowError: update your java run command with -Xss !!!\n", soe);
       throw new JVMStackOverFlowException();

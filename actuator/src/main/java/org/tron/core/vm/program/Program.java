@@ -16,12 +16,10 @@ import static org.tron.protos.contract.Common.ResourceCode.UNRECOGNIZED;
 
 import com.google.protobuf.ByteString;
 import java.math.BigInteger;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import evm_messages.BlockMessageOuterClass.Contract;
 import evm_messages.BlockMessageOuterClass.Opcode;
 import evm_messages.BlockMessageOuterClass.AddressCode;
 import lombok.Getter;
@@ -1183,6 +1181,35 @@ public class Program {
             energy,
             getCallDeep(),
             getResult().getException()
+    );
+  }
+
+  public void setCaptureFaultTrace(int opcodeNum, String opcodeName, long energy) {
+    Opcode opcode = getEvmTraceCap().opcode(opcodeNum, opcodeName);
+
+    List<ByteString> newStack = new ArrayList<>();
+    for (DataWord s : getStack()) {
+      ByteString byteStr = ByteString.copyFrom(s.getData());
+      newStack.add(byteStr);
+    }
+
+    Contract contract = getEvmTraceCap().contract(
+            getCallerAddress().getData(),
+            getContractAddress().getData(),
+            codeAddress,
+            getCallValue().getData()
+    );
+
+    getEvmTraceCap().setCaptureFault(
+            getPC(),
+            opcode,
+            energy,
+            energy,
+            getCallDeep(),
+            getResult().getException(),
+            newStack,
+            contract,
+            getMemory()
     );
   }
 
