@@ -872,7 +872,7 @@ public class Program {
     // 5. REFUND THE REMAIN Energy
     refundEnergyAfterVM(energyLimit, createResult);
 
-    evmEndAndExitTrace(createResult, getCurrentOpIntValue());
+    evmEndOrExitTrace(createResult, getCurrentOpIntValue());
   }
 
   public void refundEnergyAfterVM(DataWord energyLimit, ProgramResult result) {
@@ -1118,7 +1118,7 @@ public class Program {
       refundEnergy(msg.getEnergy().longValue(), "remaining energy from the internal call");
     }
     
-    evmEndAndExitTrace(callResult, msg.getOpCode());
+    evmEndOrExitTrace(callResult, msg.getOpCode());
   }
 
   private void evmStartOrEnterTrace(byte[] from, byte[] to, boolean create, byte[] data, long gas, byte[] value, int opCode) {
@@ -1159,7 +1159,7 @@ public class Program {
     );
   }
  
-  private void evmEndAndExitTrace(ProgramResult callResult, int opCode) {
+  private void evmEndOrExitTrace(ProgramResult callResult, int opCode) {
     String opcodeName = Op.getNameOf(opCode);
 
     if (opcodeName.contains("CALL") || opcodeName.contains("CREATE") || opcodeName.contains("CREATE2")) {
