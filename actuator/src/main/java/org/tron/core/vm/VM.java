@@ -86,15 +86,7 @@ public class VM {
           /* check if cpu time out */
           program.checkCPUTimeLimit(opName);
 
-          Opcode opcode = program.getEvmTraceCap().opcode(op.getOpcode(), opName);
-          program.getEvmTraceCap().addCaptureState(
-                  program.getPC(),
-                  opcode,
-                  0,
-                  energy,
-                  program.getCallDeep(),
-                  program.getResult().getException()
-          );
+          program.addCaptureStateTrace(op.getOpcode(), opName, energy);
 
           /* exec op action */
           op.execute(program);

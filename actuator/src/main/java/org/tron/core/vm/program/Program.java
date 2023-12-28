@@ -1173,6 +1173,19 @@ public class Program {
     evmTraceCap.setCaptureExit(callResult.getEnergyUsed(), callResult.getException());
   }
 
+  public void addCaptureStateTrace(int opcodeNum, String opcodeName, long energy) {
+    Opcode opcode = getEvmTraceCap().opcode(opcodeNum, opcodeName);
+
+    getEvmTraceCap().addCaptureState(
+            getPC(),
+            opcode,
+            energy,
+            energy,
+            getCallDeep(),
+            getResult().getException()
+    );
+  }
+
   public void increaseNonce() {
     nonce++;
   }
