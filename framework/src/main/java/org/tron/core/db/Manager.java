@@ -1313,16 +1313,7 @@ public class Manager {
 
               applyBlock(newBlock, txs);
 
-              BlockMessageCreator blockMessageCreator = new BlockMessageCreator(newBlock);
-              blockMessageCreator.create();
-              TronMessage.BlockMessage blockMessage = blockMessageCreator.getBlockMessage();
-
-              BlockMessageDescriptor blockMsgDescriptor = new BlockMessageDescriptor();
-              blockMsgDescriptor.setBlockHash(newBlock.getBlockId().toString());
-              blockMsgDescriptor.setBlockNumber(newBlock.getNum());
-
-              ProtobufMessage protobufMessage = new ProtobufMessage(blockMsgDescriptor, blockMessage.toByteArray());
-              protobufMessage.storeMessage(Args.getInstance().streamingDirectory);
+              processStreaming(newBlock);
 
               tmpSession.commit();
               // if event subscribe is enabled, post block trigger to queue
@@ -1364,6 +1355,19 @@ public class Manager {
     }
   }
 
+  public void processStreaming(BlockCapsule newBlock) {
+    BlockMessageCreator blockMessageCreator = new BlockMessageCreator(newBlock);
+    blockMessageCreator.create();
+    TronMessage.BlockMessage blockMessage = blockMessageCreator.getBlockMessage();
+
+    BlockMessageDescriptor blockMsgDescriptor = new BlockMessageDescriptor();
+    blockMsgDescriptor.setBlockHash(newBlock.getBlockId().toString());
+    blockMsgDescriptor.setBlockNumber(newBlock.getNum());
+    blockMsgDescriptor.setParentHash(newBlock.getParentHash().toString());
+    blockMsgDescriptor.setParentNumber(newBlock.getParentBlockId().getNum());
+
+    ProtobufMessage protobufMessage = new ProtobufMessage(blockMsgDescriptor, blockMessage.toByteArray());
+    protobufMessage.storeMessage(Args.getInstance().streamingDirectory);
   public void updateDynamicProperties(BlockCapsule block) {
 
     chainBaseManager.getDynamicPropertiesStore()
