@@ -164,8 +164,8 @@ import org.tron.protos.Protocol.TransactionInfo;
 import org.tron.protos.contract.BalanceContract;
 import org.tron.streaming.BlockMessageCreator;
 import org.tron.streaming.BlockMessageDescriptor;
-import org.tron.streaming.ProtobufMessage;
 import org.tron.protos.streaming.TronMessage;
+import org.tron.streaming.messages.ProtobufMessage;
 
 @Slf4j(topic = "DB")
 @Component
@@ -1312,7 +1312,6 @@ public class Manager {
                       chainBaseManager.getDynamicPropertiesStore().getLatestSolidifiedBlockNum();
 
               applyBlock(newBlock, txs);
-
               processStreaming(newBlock);
 
               tmpSession.commit();
@@ -1368,6 +1367,8 @@ public class Manager {
 
     ProtobufMessage protobufMessage = new ProtobufMessage(blockMsgDescriptor, blockMessage.toByteArray());
     protobufMessage.storeMessage(Args.getInstance().streamingDirectory);
+  }
+
   public void updateDynamicProperties(BlockCapsule block) {
 
     chainBaseManager.getDynamicPropertiesStore()
