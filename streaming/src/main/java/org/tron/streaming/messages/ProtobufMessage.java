@@ -58,6 +58,9 @@ public class ProtobufMessage {
 
         try {
             LZ4FrameOutputStream outStream = new LZ4FrameOutputStream(new FileOutputStream(new File(fullPath)));
+
+            logger.info("Stored message path: {}, length: {}", fullPath, getMeta().getSize());
+
             outStream.write(body);
             outStream.close();
         } catch (IOException e) {

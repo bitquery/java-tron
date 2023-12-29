@@ -5,6 +5,7 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
 import evm_messages.BlockMessageOuterClass.Trace;
+import lombok.extern.slf4j.Slf4j;
 import org.tron.common.utils.ByteArray;
 import org.tron.core.actuator.TransactionFactory;
 import org.tron.core.capsule.BlockCapsule;
@@ -31,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j(topic = "streaming")
 public class BlockMessageCreator {
 
     private BlockCapsule newBlock;
@@ -43,6 +45,8 @@ public class BlockMessageCreator {
     }
 
     public void create() {
+        logger.info("Creating block protobuf message, Num: {}, ID: {}.", this.newBlock.getNum(), this.newBlock.getBlockId());
+
         setBlock();
         setTransactions();
     }
