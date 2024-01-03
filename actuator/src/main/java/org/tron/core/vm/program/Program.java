@@ -1160,15 +1160,22 @@ public class Program {
   private void evmEndOrExitTrace(ProgramResult callResult, int opCode) {
     String opcodeName = Op.getNameOf(opCode);
 
+    long energyUsed = 0;
+    RuntimeException exception = null;
+    if (callResult != null) {
+      energyUsed = callResult.getEnergyUsed();
+      exception = callResult.getException();
+    }
+
     if (opcodeName.contains("CALL") || opcodeName.contains("CREATE") || opcodeName.contains("CREATE2")) {
       if (getCallDeep() == 0) {
-        evmTraceCap.setCaptureEnd(callResult.getEnergyUsed(), callResult.getException());
+        evmTraceCap.setCaptureEnd(energyUsed, exception);
 
         return;
       }
     }
 
-    evmTraceCap.setCaptureExit(callResult.getEnergyUsed(), callResult.getException());
+    evmTraceCap.setCaptureExit(energyUsed, exception);
   }
 
   public void addCaptureStateTrace(int opcodeNum, String opcodeName, long energy) {
