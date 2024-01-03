@@ -19,6 +19,7 @@ import evm_messages.BlockMessageOuterClass.CaptureStart;
 import evm_messages.BlockMessageOuterClass.Trace;
 import lombok.extern.slf4j.Slf4j;
 import org.tron.common.runtime.vm.DataWord;
+import org.tron.common.utils.ByteUtil;
 
 import java.util.Arrays;
 import java.util.List;
@@ -217,6 +218,10 @@ public class EvmTraceCapsule implements ProtoCapsule<Trace> {
     }
 
     public AddressCode addressCode(byte[] code) {
+        if (code == null) {
+            code = ByteUtil.EMPTY_BYTE_ARRAY;
+        }
+
         ByteString hash =  ByteString.copyFrom(code);
         int size = code.length;
 
