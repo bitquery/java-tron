@@ -4,7 +4,9 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.jpountz.lz4.LZ4FrameOutputStream;
 import org.tron.common.crypto.Hash;
+import org.tron.common.parameter.CommonParameter;
 import org.tron.common.utils.ByteArray;
+import org.tron.core.config.args.StreamingConfig;
 import org.tron.streaming.BlockMessageDescriptor;
 
 import java.io.File;
@@ -19,34 +21,59 @@ public class ProtobufMessage {
 
     private byte[] body;
 
+    private StreamingConfig streamingConfig;
+
     public ProtobufMessage(BlockMessageDescriptor descriptor, byte[] body) {
         getMeta().setDescriptor(descriptor);
         getMeta().setSize(body.length);
 
         this.body = body;
+        this.streamingConfig = CommonParameter.getInstance().getStreamingConfig();
     }
 
-    public void storeMessage(String streamingDirectory) {
-        String directoryPath = getDirectoryName(streamingDirectory);
-        String fileName = String.format("%d_%s_%s%s",
-                getMeta().getDescriptor().getBlockNumber(),
-                getMeta().getDescriptor().getBlockHash(),
-                getBodyHash(),
-                ".lz4"
-        );
-
-        String fullPath = Paths.get(directoryPath, fileName).toString();
+    public void storeMessage() {
+        String fullPath = getBlockPath();
 
         getMeta().setUri(fullPath);
 
         writeMessageToFileWithCompression(fullPath);
     }
 
-    private String getDirectoryName(String streamingDirectory) {
-        String blockFolder =  String.valueOf(1000 * (getMeta().getDescriptor().getBlockNumber() / 1000));
-        String directoryPath = Paths.get(streamingDirectory, blockFolder).toString();
+    private String getBlockPath() {
+        String directoryPath = getDirectoryName();
+        String fileName = String.format("%s_%s_%s%s",
+                getPaddedBlockNumber(getMeta().getDescriptor().getBlockNumber()),
+                getMeta().getDescriptor().getBlockHash(),
+                getBodyHash(),
+                streamingConfig.getPathGeneratorSuffix()
+        );
 
-        return directoryPath;
+        String fullPath = Paths.get(directoryPath, fileName).toString();
+
+        return fullPath;
+    }
+
+    private String getPaddedBlockNumber(long number) {
+        String template = "%%%s%dd";
+        String formattedBlockNumber = String.format(
+                template,
+                streamingConfig.getPathGeneratorSpacer(),
+                streamingConfig.getPathGeneratorBlockNumberPadding()
+        );
+
+        String blockNumber = String.format(formattedBlockNumber, number);
+
+        return blockNumber;
+    }
+
+    private String getDirectoryName() {
+        long blockNumber = getMeta().getDescriptor().getBlockNumber();
+        int bucketSize = streamingConfig.getPathGeneratorBucketSize();
+
+        String blockDir = getPaddedBlockNumber(bucketSize * (blockNumber / bucketSize));
+        String dirName = Paths.get(streamingConfig.getFileStorageRoot(), blockDir).toString();
+
+        return dirName;
     }
 
     private String getBodyHash() {

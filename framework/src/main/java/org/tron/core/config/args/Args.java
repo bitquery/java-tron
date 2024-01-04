@@ -359,6 +359,16 @@ public class Args extends CommonParameter {
 
     Config config = Configuration.getByFileName(PARAMETER.shellConfFileName, confFileName);
 
+    Config streamingConfig = Configuration.getByFileName(PARAMETER.streamingConfigFileName, "streaming.conf");
+    PARAMETER.streamingConfig = new StreamingConfig();
+    PARAMETER.streamingConfig.setEnable(StreamingConfig.getEnableFromConfig(streamingConfig));
+    PARAMETER.streamingConfig.setFileStorageRoot(StreamingConfig.getFileStorageFromConfig(streamingConfig));
+
+    PARAMETER.streamingConfig.setPathGeneratorBucketSize(streamingConfig.getInt("path_generator.bucket_size"));
+    PARAMETER.streamingConfig.setPathGeneratorBlockNumberPadding(streamingConfig.getInt("path_generator.block_number_padding"));
+    PARAMETER.streamingConfig.setPathGeneratorSpacer(streamingConfig.getString("path_generator.spacer"));
+    PARAMETER.streamingConfig.setPathGeneratorSuffix(streamingConfig.getString("path_generator.suffix"));
+
     if (config.hasPath(Constant.NET_TYPE)
         && Constant.TESTNET.equalsIgnoreCase(config.getString(Constant.NET_TYPE))) {
       Wallet.setAddressPreFixByte(Constant.ADD_PRE_FIX_BYTE_TESTNET);

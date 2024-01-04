@@ -1313,7 +1313,10 @@ public class Manager {
                       chainBaseManager.getDynamicPropertiesStore().getLatestSolidifiedBlockNum();
 
               applyBlock(newBlock, txs);
-              processStreaming(newBlock);
+
+              if (CommonParameter.getInstance().getStreamingConfig().isEnable()) {
+                processStreaming(newBlock);
+              }
 
               tmpSession.commit();
               // if event subscribe is enabled, post block trigger to queue
@@ -1370,7 +1373,7 @@ public class Manager {
     blockMsgDescriptor.setParentNumber(newBlock.getParentBlockId().getNum());
 
     ProtobufMessage protobufMessage = new ProtobufMessage(blockMsgDescriptor, blockMessage.toByteArray());
-    protobufMessage.storeMessage(Args.getInstance().streamingDirectory);
+    protobufMessage.storeMessage();
   }
 
   public void updateDynamicProperties(BlockCapsule block) {

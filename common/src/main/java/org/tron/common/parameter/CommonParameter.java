@@ -18,6 +18,7 @@ import org.tron.core.Constant;
 import org.tron.core.config.args.Overlay;
 import org.tron.core.config.args.SeedNode;
 import org.tron.core.config.args.Storage;
+import org.tron.core.config.args.StreamingConfig;
 import org.tron.p2p.P2pConfig;
 import org.tron.p2p.dns.update.PublishConfig;
 
@@ -31,6 +32,9 @@ public class CommonParameter {
   @Getter
   @Parameter(names = {"-c", "--config"}, description = "Config file (default:config.conf)")
   public String shellConfFileName = "";
+  @Parameter(names = {"-sc", "--streaming-config"},
+          description = "Config file (default:./config/streaming.conf)")
+  public String streamingConfigFileName = "./config/streaming.conf";
   @Getter
   @Parameter(names = {"-d", "--output-directory"},
       description = "Data directory for the databases (default:output-directory)")
@@ -446,6 +450,8 @@ public class CommonParameter {
   public Overlay overlay;
   @Getter
   public SeedNode seedNode;
+  @Getter
+  public StreamingConfig streamingConfig;
   @Getter
   public EventPluginConfig eventPluginConfig;
   @Getter
