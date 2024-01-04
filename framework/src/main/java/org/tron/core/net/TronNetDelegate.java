@@ -54,6 +54,7 @@ import org.tron.core.exception.VMIllegalException;
 import org.tron.core.exception.ValidateScheduleException;
 import org.tron.core.exception.ValidateSignatureException;
 import org.tron.core.exception.ZksnarkException;
+import org.tron.core.exception.StreamingMessageValidateException;
 import org.tron.core.metrics.MetricsService;
 import org.tron.core.net.message.MessageTypes;
 import org.tron.core.net.message.adv.BlockMessage;
@@ -268,23 +269,24 @@ public class TronNetDelegate {
           }
         }
       } catch (ValidateSignatureException
-          | ContractValidateException
-          | ContractExeException
-          | UnLinkedBlockException
-          | ValidateScheduleException
-          | AccountResourceInsufficientException
-          | TaposException
-          | TooBigTransactionException
-          | TooBigTransactionResultException
-          | DupTransactionException
-          | TransactionExpirationException
-          | BadNumberBlockException
-          | BadBlockException
-          | NonCommonBlockException
-          | ReceiptCheckErrException
-          | VMIllegalException
-          | ZksnarkException
-          | EventBloomException e) {
+               | ContractValidateException
+               | ContractExeException
+               | UnLinkedBlockException
+               | ValidateScheduleException
+               | AccountResourceInsufficientException
+               | TaposException
+               | TooBigTransactionException
+               | TooBigTransactionResultException
+               | DupTransactionException
+               | TransactionExpirationException
+               | BadNumberBlockException
+               | BadBlockException
+               | NonCommonBlockException
+               | ReceiptCheckErrException
+               | VMIllegalException
+               | ZksnarkException
+               | EventBloomException
+               | StreamingMessageValidateException e) {
         metricsService.failProcessBlock(block.getNum(), e.getMessage());
         logger.error("Process block failed, {}, reason: {}", blockId.getString(), e.getMessage());
         if (e instanceof BadBlockException

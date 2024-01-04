@@ -127,9 +127,9 @@ import org.tron.core.exception.VMIllegalException;
 import org.tron.core.exception.ValidateScheduleException;
 import org.tron.core.exception.ValidateSignatureException;
 import org.tron.core.exception.ZksnarkException;
+import org.tron.core.exception.StreamingMessageValidateException;
 import org.tron.core.metrics.MetricsKey;
 import org.tron.core.metrics.MetricsUtil;
-import org.tron.core.net.message.adv.BlockMessage;
 import org.tron.core.service.MortgageService;
 import org.tron.core.store.AccountAssetStore;
 import org.tron.core.store.AccountIdIndexStore;
@@ -165,6 +165,7 @@ import org.tron.protos.contract.BalanceContract;
 import org.tron.streaming.BlockMessageCreator;
 import org.tron.streaming.BlockMessageDescriptor;
 import org.tron.protos.streaming.TronMessage;
+import org.tron.streaming.BlockMessageValidator;
 import org.tron.streaming.messages.ProtobufMessage;
 
 @Slf4j(topic = "DB")
@@ -999,7 +1000,7 @@ public class Manager {
       TaposException, ValidateScheduleException, ReceiptCheckErrException,
       VMIllegalException, TooBigTransactionResultException, UnLinkedBlockException,
       NonCommonBlockException, BadNumberBlockException, BadBlockException, ZksnarkException,
-      EventBloomException {
+      EventBloomException, StreamingMessageValidateException {
     block.generatedByMyself = true;
     long start = System.currentTimeMillis();
     pushBlock(block);
@@ -1195,12 +1196,12 @@ public class Manager {
    * save a block.
    */
   public void pushBlock(final BlockCapsule block)
-      throws ValidateSignatureException, ContractValidateException, ContractExeException,
-      UnLinkedBlockException, ValidateScheduleException, AccountResourceInsufficientException,
-      TaposException, TooBigTransactionException, TooBigTransactionResultException,
-      DupTransactionException, TransactionExpirationException,
-      BadNumberBlockException, BadBlockException, NonCommonBlockException,
-      ReceiptCheckErrException, VMIllegalException, ZksnarkException, EventBloomException {
+          throws ValidateSignatureException, ContractValidateException, ContractExeException,
+          UnLinkedBlockException, ValidateScheduleException, AccountResourceInsufficientException,
+          TaposException, TooBigTransactionException, TooBigTransactionResultException,
+          DupTransactionException, TransactionExpirationException,
+          BadNumberBlockException, BadBlockException, NonCommonBlockException,
+          ReceiptCheckErrException, VMIllegalException, ZksnarkException, EventBloomException, StreamingMessageValidateException {
     setBlockWaitLock(true);
     try {
       synchronized (this) {
@@ -1354,10 +1355,13 @@ public class Manager {
     }
   }
 
-  public void processStreaming(BlockCapsule newBlock) {
+  public void processStreaming(BlockCapsule newBlock) throws StreamingMessageValidateException {
     BlockMessageCreator blockMessageCreator = new BlockMessageCreator(newBlock);
     blockMessageCreator.create();
     TronMessage.BlockMessage blockMessage = blockMessageCreator.getBlockMessage();
+
+    BlockMessageValidator validator = new BlockMessageValidator(blockMessage);
+    validator.validate();
 
     BlockMessageDescriptor blockMsgDescriptor = new BlockMessageDescriptor();
     blockMsgDescriptor.setBlockHash(newBlock.getBlockId().toString());
