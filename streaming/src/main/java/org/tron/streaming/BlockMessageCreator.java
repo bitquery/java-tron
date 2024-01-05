@@ -45,7 +45,7 @@ public class BlockMessageCreator {
     }
 
     public void create() {
-        logger.info("Creating block protobuf message, Num: {}, ID: {}.", this.newBlock.getNum(), this.newBlock.getBlockId());
+        logger.info("Creating block protobuf message, Num: {}, ID: {}", this.newBlock.getNum(), this.newBlock.getBlockId());
 
         setBlock();
         setTransactions();
