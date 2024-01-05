@@ -18,9 +18,16 @@ public class StreamingConfig {
     private static final boolean DEFAULT_ENABLE = false;
     private static final String DEFAULT_FILE_STORAGE_ROOT = "streaming-directory";
 
+    /**
+     * General information
+     */
     @Getter
     @Setter
     private boolean enable;
+
+    @Getter
+    @Setter
+    private String chainId;
 
     /**
      * File Storage config

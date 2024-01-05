@@ -1371,6 +1371,7 @@ public class Manager {
     blockMsgDescriptor.setBlockNumber(newBlock.getNum());
     blockMsgDescriptor.setParentHash(newBlock.getParentHash().toString());
     blockMsgDescriptor.setParentNumber(newBlock.getParentBlockId().getNum());
+    blockMsgDescriptor.setChainId(CommonParameter.getInstance().getStreamingConfig().getChainId());
 
     ProtobufMessage protobufMessage = new ProtobufMessage(blockMsgDescriptor, blockMessage.toByteArray());
     protobufMessage.storeMessage();

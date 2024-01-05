@@ -8,4 +8,5 @@ public class BlockMessageDescriptor {
   private long blockNumber;
   private String parentHash;
   private long parentNumber;
+  private String chainId;
 }
