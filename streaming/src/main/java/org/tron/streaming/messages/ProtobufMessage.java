@@ -25,10 +25,11 @@ public class ProtobufMessage {
 
     public ProtobufMessage(BlockMessageDescriptor descriptor, byte[] body) {
         getMeta().setDescriptor(descriptor);
-        getMeta().setSize(body.length);
 
         this.body = body;
         this.streamingConfig = CommonParameter.getInstance().getStreamingConfig();
+        getMeta().setSize(body.length);
+        getMeta().setServers(this.streamingConfig.getFileStorageUrls());
     }
 
     public void storeMessage() {

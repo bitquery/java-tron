@@ -4,6 +4,8 @@ import com.typesafe.config.Config;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 public class StreamingConfig {
 
     /**
@@ -35,6 +37,10 @@ public class StreamingConfig {
     @Getter
     @Setter
     private String fileStorageRoot;
+
+    @Getter
+    @Setter
+    private List<String> fileStorageUrls;
 
     /**
      * Path Generator config

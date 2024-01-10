@@ -364,6 +364,7 @@ public class Args extends CommonParameter {
     PARAMETER.streamingConfig.setEnable(StreamingConfig.getEnableFromConfig(streamingConfig));
     PARAMETER.streamingConfig.setChainId(streamingConfig.getString("chain_id"));
     PARAMETER.streamingConfig.setFileStorageRoot(StreamingConfig.getFileStorageFromConfig(streamingConfig));
+    PARAMETER.streamingConfig.setFileStorageUrls(streamingConfig.getStringList("file_storage.urls"));
 
     PARAMETER.streamingConfig.setPathGeneratorBucketSize(streamingConfig.getInt("path_generator.bucket_size"));
     PARAMETER.streamingConfig.setPathGeneratorBlockNumberPadding(streamingConfig.getInt("path_generator.block_number_padding"));
