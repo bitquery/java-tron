@@ -166,6 +166,7 @@ import org.tron.streaming.BlockMessageCreator;
 import org.tron.streaming.BlockMessageDescriptor;
 import org.tron.protos.streaming.TronMessage;
 import org.tron.streaming.BlockMessageValidator;
+import org.tron.streaming.EllipticSigner;
 import org.tron.streaming.messages.ProtobufMessage;
 
 @Slf4j(topic = "DB")
@@ -1374,6 +1375,8 @@ public class Manager {
     blockMsgDescriptor.setChainId(CommonParameter.getInstance().getStreamingConfig().getChainId());
 
     ProtobufMessage protobufMessage = new ProtobufMessage(blockMsgDescriptor, blockMessage.toByteArray());
+    protobufMessage.prepareAuthenticator();
+    protobufMessage.signMessage();
     protobufMessage.storeMessage();
   }
 

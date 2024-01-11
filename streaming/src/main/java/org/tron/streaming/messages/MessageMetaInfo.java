@@ -7,6 +7,7 @@ import java.util.List;
 
 @Data
 public class MessageMetaInfo {
+    private MessageAuthenticator authenticator;
     private BlockMessageDescriptor descriptor;
     private String uri;
     private int size;
