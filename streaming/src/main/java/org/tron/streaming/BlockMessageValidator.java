@@ -2,10 +2,12 @@ package org.tron.streaming;
 
 import com.google.protobuf.Empty;
 import evm_messages.BlockMessageOuterClass.Trace;
+import lombok.extern.slf4j.Slf4j;
 import org.tron.core.exception.BadBlockException;
 import org.tron.core.exception.StreamingMessageValidateException;
 import org.tron.protos.streaming.TronMessage;
 
+@Slf4j(topic = "streaming")
 public class BlockMessageValidator {
     TronMessage.BlockMessage message;
     long blockNumber;
@@ -16,6 +18,12 @@ public class BlockMessageValidator {
     }
 
     public void validate() throws StreamingMessageValidateException {
+        logger.info(
+                "Validating block protobuf message, Num: {}",
+                this.message.getHeader().getNumber(),
+                this.message.getHeader().getHash()
+        );
+
         transactions();
     }
 
