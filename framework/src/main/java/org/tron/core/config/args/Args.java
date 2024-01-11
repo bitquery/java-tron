@@ -366,6 +366,8 @@ public class Args extends CommonParameter {
     PARAMETER.streamingConfig.setFileStorageRoot(StreamingConfig.getFileStorageFromConfig(streamingConfig));
     PARAMETER.streamingConfig.setFileStorageUrls(streamingConfig.getStringList("file_storage.urls"));
 
+    PARAMETER.streamingConfig.setEllipticSignerPrivateKeyHex(streamingConfig.getString("elliptic_signer.private_key_hex"));
+
     PARAMETER.streamingConfig.setPathGeneratorBucketSize(streamingConfig.getInt("path_generator.bucket_size"));
     PARAMETER.streamingConfig.setPathGeneratorBlockNumberPadding(streamingConfig.getInt("path_generator.block_number_padding"));
     PARAMETER.streamingConfig.setPathGeneratorSpacer(streamingConfig.getString("path_generator.spacer"));

@@ -43,6 +43,13 @@ public class StreamingConfig {
     private List<String> fileStorageUrls;
 
     /**
+     * Elliptic Signer config
+     */
+    @Getter
+    @Setter
+    private String ellipticSignerPrivateKeyHex;
+
+    /**
      * Path Generator config
      */
     @Getter
