@@ -368,6 +368,16 @@ public class Args extends CommonParameter {
 
     PARAMETER.streamingConfig.setEllipticSignerPrivateKeyHex(streamingConfig.getString("elliptic_signer.private_key_hex"));
 
+    PARAMETER.streamingConfig.setKafkaBrokerBootstrapServers(streamingConfig.getString("kafka_broker.bootstrap_servers"));
+    PARAMETER.streamingConfig.setKafkaBrokerSecurityProtocol(streamingConfig.getString("kafka_broker.security_protocol"));
+    PARAMETER.streamingConfig.setKafkaBrokerSslTruststoreType(streamingConfig.getString("kafka_broker.ssl_truststore_type"));
+    PARAMETER.streamingConfig.setKafkaBrokerSslTruststoreLocation(streamingConfig.getString("kafka_broker.ssl_truststore_location"));
+    PARAMETER.streamingConfig.setKafkaBrokerSslKeystoreType(streamingConfig.getString("kafka_broker.ssl_keystore_type"));
+    PARAMETER.streamingConfig.setKafkaBrokerSslKeystoreLocation(streamingConfig.getString("kafka_broker.ssl_keystore_location"));
+    PARAMETER.streamingConfig.setKafkaBrokerSslKeyPassword(streamingConfig.getString("kafka_broker.ssl_key_password"));
+    PARAMETER.streamingConfig.setKafkaBrokerSslEndpointIdentificationAlgorithm(streamingConfig.getString("kafka_broker.ssl_endpoint_identification_algorithm"));
+    PARAMETER.streamingConfig.setKafkaBrokerAllowAutoCreateTopics(streamingConfig.getBoolean("kafka_broker.allow_auto_create_topics"));
+
     PARAMETER.streamingConfig.setPathGeneratorBucketSize(streamingConfig.getInt("path_generator.bucket_size"));
     PARAMETER.streamingConfig.setPathGeneratorBlockNumberPadding(streamingConfig.getInt("path_generator.block_number_padding"));
     PARAMETER.streamingConfig.setPathGeneratorSpacer(streamingConfig.getString("path_generator.spacer"));

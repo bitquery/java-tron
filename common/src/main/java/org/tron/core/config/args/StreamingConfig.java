@@ -50,6 +50,45 @@ public class StreamingConfig {
     private String ellipticSignerPrivateKeyHex;
 
     /**
+     * Kafka Broker config
+     */
+    @Getter
+    @Setter
+    private String kafkaBrokerBootstrapServers;
+
+    @Getter
+    @Setter
+    private String kafkaBrokerSecurityProtocol;
+
+    @Getter
+    @Setter
+    private String kafkaBrokerSslTruststoreType;
+
+    @Getter
+    @Setter
+    private String kafkaBrokerSslTruststoreLocation;
+
+    @Getter
+    @Setter
+    private String kafkaBrokerSslKeystoreType;
+
+    @Getter
+    @Setter
+    private String kafkaBrokerSslKeystoreLocation;
+
+    @Getter
+    @Setter
+    private String kafkaBrokerSslKeyPassword;
+
+    @Getter
+    @Setter
+    private String kafkaBrokerSslEndpointIdentificationAlgorithm;
+
+    @Getter
+    @Setter
+    private boolean kafkaBrokerAllowAutoCreateTopics;
+
+    /**
      * Path Generator config
      */
     @Getter
