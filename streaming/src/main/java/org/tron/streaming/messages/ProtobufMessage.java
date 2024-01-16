@@ -42,7 +42,26 @@ public class ProtobufMessage {
         getMeta().setServers(this.streamingConfig.getFileStorageUrls());
     }
 
-    public void prepareAuthenticator() {
+    public void sign() {
+        prepareAuthenticator();
+
+        byte[] message = ByteArray.fromHexString(getMeta().getAuthenticator().getId());
+        ECKey.ECDSASignature signature = this.signer.sign(message);
+
+        getMeta().getAuthenticator().setSigner(this.signer.getAddress());
+        getMeta().getAuthenticator().setSignature(ByteArray.toHexString(signature.toByteArray()));
+    }
+
+    public void store() {
+        String fullPath = getBlockPath();
+        writeMessageToFileWithCompression(fullPath);
+
+        logger.info("Stored message, Path: {}, Length: {}", fullPath, getMeta().getSize());
+
+        getMeta().setUri(fullPath);
+    }
+
+    private void prepareAuthenticator() {
         logger.info("Preparing authenticator for block protobuf message");
 
         byte[] bodyHash = getBodyHash();
@@ -59,27 +78,6 @@ public class ProtobufMessage {
         getMeta().getAuthenticator().setBodyHash(ByteArray.toHexString(bodyHash));
         getMeta().getAuthenticator().setTime(time);
         getMeta().getAuthenticator().setId(ByteArray.toHexString(idHash));
-    }
-
-    public void signMessage() {
-        byte[] message = ByteArray.fromHexString(getMeta().getAuthenticator().getId());
-        ECKey.ECDSASignature signature = this.signer.sign(message);
-
-        getMeta().getAuthenticator().setSigner(this.signer.getAddress());
-        getMeta().getAuthenticator().setSignature(ByteArray.toHexString(signature.toByteArray()));
-    }
-
-    public void storeMessage() {
-        String fullPath = getBlockPath();
-        writeMessageToFileWithCompression(fullPath);
-
-        logger.info("Stored message, Path: {}, Length: {}", fullPath, getMeta().getSize());
-
-        getMeta().setUri(fullPath);
-    }
-
-    public void setSigner(EllipticSigner signer) {
-        this.signer = this.signer == null ? signer : this.signer;
     }
 
     private String getBlockPath() {

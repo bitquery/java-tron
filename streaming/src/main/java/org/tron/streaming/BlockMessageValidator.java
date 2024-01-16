@@ -20,15 +20,15 @@ public class BlockMessageValidator {
     public void validate() throws StreamingMessageValidateException {
         logger.info(
                 "Validating block protobuf message, Num: {}",
-                this.message.getHeader().getNumber(),
-                this.message.getHeader().getHash()
+                message.getHeader().getNumber(),
+                message.getHeader().getHash()
         );
 
         transactions();
     }
 
     public void transactions() throws StreamingMessageValidateException {
-        for (TronMessage.Transaction tx : this.message.getTransactionsList()) {
+        for (TronMessage.Transaction tx : message.getTransactionsList()) {
             internalTransactionsAndTraces(tx);
             logsAndCaptureStateLogs(tx);
         }
@@ -49,7 +49,7 @@ public class BlockMessageValidator {
             throw new StreamingMessageValidateException(
                     String.format(
                             "'Internal Transaction' validation for block %s wasn't passed. Expected: %d, actual: %d",
-                            this.blockNumber,
+                            blockNumber,
                             expectedCount,
                             actualCount
                     )
@@ -67,7 +67,7 @@ public class BlockMessageValidator {
             throw new StreamingMessageValidateException(
                     String.format(
                             "'LOG' validation for block %s wasn't passed. Expected: %d, actual: %d",
-                            this.blockNumber,
+                            blockNumber,
                             expectedCount,
                             actualCount
                     )
