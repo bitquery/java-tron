@@ -162,12 +162,7 @@ import org.tron.protos.Protocol.Transaction;
 import org.tron.protos.Protocol.Transaction.Contract;
 import org.tron.protos.Protocol.TransactionInfo;
 import org.tron.protos.contract.BalanceContract;
-import org.tron.streaming.BlockMessageCreator;
-import org.tron.streaming.BlockMessageDescriptor;
-import org.tron.protos.streaming.TronMessage;
-import org.tron.streaming.BlockMessageValidator;
-import org.tron.streaming.EllipticSigner;
-import org.tron.streaming.messages.ProtobufMessage;
+import org.tron.streaming.StreamingProcessor;
 
 @Slf4j(topic = "DB")
 @Component
@@ -265,6 +260,8 @@ public class Manager {
   private static final String triggerEsName = "event-trigger";
   private ExecutorService filterEs;
   private static final String filterEsName = "filter";
+
+  private StreamingProcessor streamingProcessor;
 
   /**
    * Cycle thread to rePush Transactions
@@ -471,6 +468,7 @@ public class Manager {
     revokingStore.disable();
     revokingStore.check();
     transactionCache.initCache();
+    this.streamingProcessor = new StreamingProcessor();
     this.setProposalController(ProposalController.createInstance(this));
     this.setMerkleContainer(
         merkleContainer.createInstance(chainBaseManager.getMerkleTreeStore(),
@@ -1316,7 +1314,7 @@ public class Manager {
               applyBlock(newBlock, txs);
 
               if (CommonParameter.getInstance().getStreamingConfig().isEnable()) {
-                processStreaming(newBlock);
+                streamingProcessor.process(newBlock);
               }
 
               tmpSession.commit();
@@ -1357,27 +1355,6 @@ public class Manager {
     } finally {
       setBlockWaitLock(false);
     }
-  }
-
-  public void processStreaming(BlockCapsule newBlock) throws StreamingMessageValidateException {
-    BlockMessageCreator blockMessageCreator = new BlockMessageCreator(newBlock);
-    blockMessageCreator.create();
-    TronMessage.BlockMessage blockMessage = blockMessageCreator.getBlockMessage();
-
-    BlockMessageValidator validator = new BlockMessageValidator(blockMessage);
-    validator.validate();
-
-    BlockMessageDescriptor blockMsgDescriptor = new BlockMessageDescriptor();
-    blockMsgDescriptor.setBlockHash(newBlock.getBlockId().toString());
-    blockMsgDescriptor.setBlockNumber(newBlock.getNum());
-    blockMsgDescriptor.setParentHash(newBlock.getParentHash().toString());
-    blockMsgDescriptor.setParentNumber(newBlock.getParentBlockId().getNum());
-    blockMsgDescriptor.setChainId(CommonParameter.getInstance().getStreamingConfig().getChainId());
-
-    ProtobufMessage protobufMessage = new ProtobufMessage(blockMsgDescriptor, blockMessage.toByteArray());
-    protobufMessage.prepareAuthenticator();
-    protobufMessage.signMessage();
-    protobufMessage.storeMessage();
   }
 
   public void updateDynamicProperties(BlockCapsule block) {
@@ -2457,6 +2434,7 @@ public class Manager {
     chainBaseManager.shutdown();
     revokingStore.shutdown();
     session.reset();
+    streamingProcessor.close();
   }
 
   private static class ValidateSignTask implements Callable<Boolean> {
