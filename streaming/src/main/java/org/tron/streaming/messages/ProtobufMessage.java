@@ -8,6 +8,7 @@ import org.tron.common.crypto.ECKey;
 import org.tron.common.crypto.Hash;
 import org.tron.common.parameter.CommonParameter;
 import org.tron.common.utils.ByteArray;
+import org.tron.common.utils.FileUtil;
 import org.tron.common.utils.JsonUtil;
 import org.tron.core.config.args.StreamingConfig;
 import org.tron.streaming.BlockMessageDescriptor;
@@ -54,7 +55,7 @@ public class ProtobufMessage {
 
     public void store() {
         String fullPath = getBlockPath();
-        writeMessageToFileWithCompression(fullPath);
+        writeOnceMessageToFile(fullPath);
 
         logger.info("Stored message, Path: {}, Length: {}", fullPath, getMeta().getSize());
 
@@ -121,7 +122,11 @@ public class ProtobufMessage {
         return Hash.sha3(body);
     }
 
-    private void writeMessageToFileWithCompression(String fullPath) {
+    private void writeOnceMessageToFile(String fullPath) {
+        if (FileUtil.isExists(fullPath)){
+            return;
+        }
+
         new File(fullPath).getParentFile().mkdirs();
 
         try {
