@@ -21,8 +21,11 @@ public class KafkaMessageBroker {
 
     public void send(String topicName, ProtobufMessage protobufMessage) {
         String value = JsonUtil.obj2Json(protobufMessage.getMeta()).toString();
+        long block = protobufMessage.getMeta().getDescriptor().getBlockNumber();
 
         ProducerRecord msg = new ProducerRecord<>(topicName, value);
+
+        logger.info(String.format("Sending message, Num: %d, Topic: %s", block, topicName));
 
         producer.send(msg, new Callback() {
             public void onCompletion(RecordMetadata metadata, Exception e) {
@@ -34,10 +37,7 @@ public class KafkaMessageBroker {
                                     metadata.offset())
                             );
                 } else {
-                    logger.info(String.format("Delivery failed, Num: %d, Error: %s",
-                            protobufMessage.getMeta().getDescriptor().getBlockNumber(),
-                            e.getMessage())
-                    );
+                    logger.info(String.format("Delivery failed, Num: %d, Error: %s", block, e.getMessage()));
                 }
             }
         });
