@@ -50,6 +50,13 @@ public class StreamingConfig {
     private String ellipticSignerPrivateKeyHex;
 
     /**
+     * Kafka Topics config
+     */
+    @Getter
+    @Setter
+    private Config kafkaTopicBlocks;
+
+    /**
      * Kafka Broker config
      */
     @Getter

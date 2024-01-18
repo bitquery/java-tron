@@ -94,6 +94,7 @@ import org.tron.core.capsule.WitnessCapsule;
 import org.tron.core.capsule.utils.TransactionUtil;
 import org.tron.core.config.Parameter.ChainConstant;
 import org.tron.core.config.args.Args;
+import org.tron.core.config.args.StreamingConfig;
 import org.tron.core.consensus.ProposalController;
 import org.tron.core.db.KhaosDatabase.KhaosBlock;
 import org.tron.core.db.accountstate.TrieService;
@@ -118,6 +119,7 @@ import org.tron.core.exception.EventBloomException;
 import org.tron.core.exception.ItemNotFoundException;
 import org.tron.core.exception.NonCommonBlockException;
 import org.tron.core.exception.ReceiptCheckErrException;
+import org.tron.core.exception.StreamingMessageValidateException;
 import org.tron.core.exception.TaposException;
 import org.tron.core.exception.TooBigTransactionException;
 import org.tron.core.exception.TooBigTransactionResultException;
@@ -127,7 +129,6 @@ import org.tron.core.exception.VMIllegalException;
 import org.tron.core.exception.ValidateScheduleException;
 import org.tron.core.exception.ValidateSignatureException;
 import org.tron.core.exception.ZksnarkException;
-import org.tron.core.exception.StreamingMessageValidateException;
 import org.tron.core.metrics.MetricsKey;
 import org.tron.core.metrics.MetricsUtil;
 import org.tron.core.service.MortgageService;
@@ -162,6 +163,7 @@ import org.tron.protos.Protocol.Transaction;
 import org.tron.protos.Protocol.Transaction.Contract;
 import org.tron.protos.Protocol.TransactionInfo;
 import org.tron.protos.contract.BalanceContract;
+import org.tron.protos.contract.Common;
 import org.tron.streaming.StreamingProcessor;
 
 @Slf4j(topic = "DB")
@@ -261,7 +263,7 @@ public class Manager {
   private ExecutorService filterEs;
   private static final String filterEsName = "filter";
 
-  private StreamingProcessor streamingProcessor;
+  private StreamingProcessor blockStreamingProcessor;
 
   /**
    * Cycle thread to rePush Transactions
@@ -468,7 +470,10 @@ public class Manager {
     revokingStore.disable();
     revokingStore.check();
     transactionCache.initCache();
-    this.streamingProcessor = new StreamingProcessor();
+
+    StreamingConfig streamingConf = CommonParameter.getInstance().getStreamingConfig();
+    this.blockStreamingProcessor = new StreamingProcessor(streamingConf.getKafkaTopicBlocks());
+
     this.setProposalController(ProposalController.createInstance(this));
     this.setMerkleContainer(
         merkleContainer.createInstance(chainBaseManager.getMerkleTreeStore(),
@@ -1200,7 +1205,8 @@ public class Manager {
           TaposException, TooBigTransactionException, TooBigTransactionResultException,
           DupTransactionException, TransactionExpirationException,
           BadNumberBlockException, BadBlockException, NonCommonBlockException,
-          ReceiptCheckErrException, VMIllegalException, ZksnarkException, EventBloomException, StreamingMessageValidateException {
+          ReceiptCheckErrException, VMIllegalException, ZksnarkException, EventBloomException,
+          StreamingMessageValidateException {
     setBlockWaitLock(true);
     try {
       synchronized (this) {
@@ -1313,8 +1319,8 @@ public class Manager {
 
               applyBlock(newBlock, txs);
 
-              if (CommonParameter.getInstance().getStreamingConfig().isEnable()) {
-                streamingProcessor.process(newBlock);
+              if (blockStreamingProcessor.enabled()) {
+                blockStreamingProcessor.process(newBlock);
               }
 
               tmpSession.commit();
@@ -2434,7 +2440,7 @@ public class Manager {
     chainBaseManager.shutdown();
     revokingStore.shutdown();
     session.reset();
-    streamingProcessor.close();
+    blockStreamingProcessor.close();
   }
 
   private static class ValidateSignTask implements Callable<Boolean> {

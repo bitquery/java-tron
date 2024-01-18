@@ -368,6 +368,8 @@ public class Args extends CommonParameter {
 
     PARAMETER.streamingConfig.setEllipticSignerPrivateKeyHex(streamingConfig.getString("elliptic_signer.private_key_hex"));
 
+    PARAMETER.streamingConfig.setKafkaTopicBlocks(streamingConfig.getConfig("kafka_topics.blocks"));
+
     PARAMETER.streamingConfig.setKafkaBrokerBootstrapServers(streamingConfig.getString("kafka_broker.bootstrap_servers"));
     PARAMETER.streamingConfig.setKafkaBrokerSecurityProtocol(streamingConfig.getString("kafka_broker.security_protocol"));
     PARAMETER.streamingConfig.setKafkaBrokerSslTruststoreType(streamingConfig.getString("kafka_broker.ssl_truststore_type"));
