@@ -65,6 +65,7 @@ import org.tron.core.exception.HeaderNotFound;
 import org.tron.core.exception.ItemNotFoundException;
 import org.tron.core.exception.NonCommonBlockException;
 import org.tron.core.exception.ReceiptCheckErrException;
+import org.tron.core.exception.StreamingMessageValidateException;
 import org.tron.core.exception.TaposException;
 import org.tron.core.exception.TooBigTransactionException;
 import org.tron.core.exception.TooBigTransactionResultException;
@@ -197,12 +198,12 @@ public class ManagerTest extends BlockGenerate {
 
   @Test
   public void setBlockReference()
-      throws ContractExeException, UnLinkedBlockException, ValidateScheduleException,
-      BadBlockException, ContractValidateException, ValidateSignatureException,
-      AccountResourceInsufficientException, TransactionExpirationException,
-      TooBigTransactionException, DupTransactionException, TaposException, BadNumberBlockException,
-      NonCommonBlockException, ReceiptCheckErrException, VMIllegalException,
-      TooBigTransactionResultException, ZksnarkException, EventBloomException {
+          throws ContractExeException, UnLinkedBlockException, ValidateScheduleException,
+          BadBlockException, ContractValidateException, ValidateSignatureException,
+          AccountResourceInsufficientException, TransactionExpirationException,
+          TooBigTransactionException, DupTransactionException, TaposException, BadNumberBlockException,
+          NonCommonBlockException, ReceiptCheckErrException, VMIllegalException,
+          TooBigTransactionResultException, ZksnarkException, EventBloomException, StreamingMessageValidateException {
 
     BlockCapsule blockCapsule =
         new BlockCapsule(
@@ -573,12 +574,12 @@ public class ManagerTest extends BlockGenerate {
 
   @Test
   public void pushSwitchFork()
-      throws UnLinkedBlockException, NonCommonBlockException, ContractValidateException,
-      ValidateScheduleException, ZksnarkException, BadBlockException, VMIllegalException,
-      BadNumberBlockException, DupTransactionException, ContractExeException,
-      ValidateSignatureException, TooBigTransactionResultException, TransactionExpirationException,
-      TaposException, ReceiptCheckErrException, TooBigTransactionException,
-      AccountResourceInsufficientException, EventBloomException {
+          throws UnLinkedBlockException, NonCommonBlockException, ContractValidateException,
+          ValidateScheduleException, ZksnarkException, BadBlockException, VMIllegalException,
+          BadNumberBlockException, DupTransactionException, ContractExeException,
+          ValidateSignatureException, TooBigTransactionResultException, TransactionExpirationException,
+          TaposException, ReceiptCheckErrException, TooBigTransactionException,
+          AccountResourceInsufficientException, EventBloomException, StreamingMessageValidateException {
 
     String key = "f31db24bfbd1a2ef19beddca0a0fa37632eded9ac666a05d3bd925f01dde1f62";
     byte[] privateKey = ByteArray.fromHexString(key);
@@ -680,13 +681,13 @@ public class ManagerTest extends BlockGenerate {
 
   @Test
   public void fork()
-      throws ValidateSignatureException, ContractValidateException, ContractExeException,
-      UnLinkedBlockException, ValidateScheduleException, BadItemException,
-      ItemNotFoundException, HeaderNotFound, AccountResourceInsufficientException,
-      TransactionExpirationException, TooBigTransactionException, DupTransactionException,
-      BadBlockException, TaposException, BadNumberBlockException, NonCommonBlockException,
-      ReceiptCheckErrException, VMIllegalException, TooBigTransactionResultException,
-      ZksnarkException, EventBloomException {
+          throws ValidateSignatureException, ContractValidateException, ContractExeException,
+          UnLinkedBlockException, ValidateScheduleException, BadItemException,
+          ItemNotFoundException, HeaderNotFound, AccountResourceInsufficientException,
+          TransactionExpirationException, TooBigTransactionException, DupTransactionException,
+          BadBlockException, TaposException, BadNumberBlockException, NonCommonBlockException,
+          ReceiptCheckErrException, VMIllegalException, TooBigTransactionResultException,
+          ZksnarkException, EventBloomException, StreamingMessageValidateException {
     Args.setParam(new String[]{"--witness"}, Constant.TEST_CONF);
     long size = chainManager.getBlockStore().size();
     //  System.out.print("block store size:" + size + "\n");
@@ -798,14 +799,14 @@ public class ManagerTest extends BlockGenerate {
 
   @Test
   public void doNotSwitch()
-      throws ValidateSignatureException, ContractValidateException, ContractExeException,
-      UnLinkedBlockException, ValidateScheduleException, BadItemException,
-      ItemNotFoundException, HeaderNotFound, AccountResourceInsufficientException,
-      TransactionExpirationException, TooBigTransactionException,
-      DupTransactionException, BadBlockException,
-      TaposException, BadNumberBlockException, NonCommonBlockException,
-      ReceiptCheckErrException, VMIllegalException, TooBigTransactionResultException,
-      ZksnarkException, EventBloomException {
+          throws ValidateSignatureException, ContractValidateException, ContractExeException,
+          UnLinkedBlockException, ValidateScheduleException, BadItemException,
+          ItemNotFoundException, HeaderNotFound, AccountResourceInsufficientException,
+          TransactionExpirationException, TooBigTransactionException,
+          DupTransactionException, BadBlockException,
+          TaposException, BadNumberBlockException, NonCommonBlockException,
+          ReceiptCheckErrException, VMIllegalException, TooBigTransactionResultException,
+          ZksnarkException, EventBloomException, StreamingMessageValidateException {
     Args.setParam(new String[]{"--witness"}, Constant.TEST_CONF);
     long size = chainManager.getBlockStore().size();
     System.out.print("block store size:" + size + "\n");
@@ -905,13 +906,13 @@ public class ManagerTest extends BlockGenerate {
 
   @Test
   public void switchBack()
-      throws ValidateSignatureException, ContractValidateException, ContractExeException,
-      UnLinkedBlockException, ValidateScheduleException, BadItemException,
-      ItemNotFoundException, HeaderNotFound, AccountResourceInsufficientException,
-      TransactionExpirationException, TooBigTransactionException, DupTransactionException,
-      BadBlockException, TaposException, BadNumberBlockException, NonCommonBlockException,
-      ReceiptCheckErrException, VMIllegalException, TooBigTransactionResultException,
-      ZksnarkException, EventBloomException {
+          throws ValidateSignatureException, ContractValidateException, ContractExeException,
+          UnLinkedBlockException, ValidateScheduleException, BadItemException,
+          ItemNotFoundException, HeaderNotFound, AccountResourceInsufficientException,
+          TransactionExpirationException, TooBigTransactionException, DupTransactionException,
+          BadBlockException, TaposException, BadNumberBlockException, NonCommonBlockException,
+          ReceiptCheckErrException, VMIllegalException, TooBigTransactionResultException,
+          ZksnarkException, EventBloomException, StreamingMessageValidateException {
     Args.setParam(new String[]{"--witness"}, Constant.TEST_CONF);
     long size = chainManager.getBlockStore().size();
     System.out.print("block store size:" + size + "\n");
