@@ -127,7 +127,7 @@ services:
       nginx:
         condition: service_started
     # labels:
-    #   - __log_type=java-tron
+    #   - __log_type=java-tron-streaming
     <<:
       [
         *common-network,
