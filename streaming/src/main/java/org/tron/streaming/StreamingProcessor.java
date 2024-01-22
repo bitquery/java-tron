@@ -38,7 +38,7 @@ public class StreamingProcessor {
         blockMsgDescriptor.setParentNumber(newBlock.getParentBlockId().getNum());
         blockMsgDescriptor.setChainId(CommonParameter.getInstance().getStreamingConfig().getChainId());
 
-        ProtobufMessage protobufMessage = new ProtobufMessage(blockMsgDescriptor, blockMessage.toByteArray());
+        ProtobufMessage protobufMessage = new ProtobufMessage(blockMsgDescriptor, blockMessage.toByteArray(), topic);
         protobufMessage.sign();
         protobufMessage.store();
 

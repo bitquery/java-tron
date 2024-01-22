@@ -27,17 +27,19 @@ public class ProtobufMessage {
 
     private byte[] body;
 
+    private String topic;
+
     private StreamingConfig streamingConfig;
 
-    private EllipticSigner signer;
+    private EllipticSigner signer = new EllipticSigner();
 
-    public ProtobufMessage(BlockMessageDescriptor descriptor, byte[] body) {
+    public ProtobufMessage(BlockMessageDescriptor descriptor, byte[] body, String topic) {
         getMeta().setDescriptor(descriptor);
         getMeta().setAuthenticator(new MessageAuthenticator());
 
         this.body = body;
+        this.topic = topic;
         this.streamingConfig = CommonParameter.getInstance().getStreamingConfig();
-        this.signer = new EllipticSigner();
 
         getMeta().setSize(body.length);
         getMeta().setServers(this.streamingConfig.getFileStorageUrls());
@@ -57,9 +59,15 @@ public class ProtobufMessage {
         String fullPath = getBlockPath();
         writeOnceMessageToFile(fullPath);
 
-        logger.info("Stored message, Path: {}, Length: {}", fullPath, getMeta().getSize());
+        setUri(fullPath);
+    }
 
-        getMeta().setUri(fullPath);
+    private void setUri(String fullPath) {
+        // deletes folder prefix;
+        String uriPath = fullPath.replaceFirst(streamingConfig.getFileStorageRoot() + "/", "");
+        getMeta().setUri(uriPath);
+
+        logger.info("Stored message, Path: {}, Length: {}", uriPath, getMeta().getSize());
     }
 
     private void prepareAuthenticator() {
@@ -95,6 +103,17 @@ public class ProtobufMessage {
         return fullPath;
     }
 
+    private String getDirectoryName() {
+        long currentBlockNum = getMeta().getDescriptor().getBlockNumber();
+        int bucketSize = streamingConfig.getPathGeneratorBucketSize();
+        String folderPrefix = streamingConfig.getFileStorageRoot();
+
+        String paddedBlockNum = getPaddedBlockNumber(bucketSize * (currentBlockNum / bucketSize));
+        String dirName = Paths.get(folderPrefix, topic, paddedBlockNum).toString();
+
+        return dirName;
+    }
+
     private String getPaddedBlockNumber(long number) {
         String template = "%%%s%dd";
         String formattedBlockNumber = String.format(
@@ -106,16 +125,6 @@ public class ProtobufMessage {
         String blockNumber = String.format(formattedBlockNumber, number);
 
         return blockNumber;
-    }
-
-    private String getDirectoryName() {
-        long blockNumber = getMeta().getDescriptor().getBlockNumber();
-        int bucketSize = streamingConfig.getPathGeneratorBucketSize();
-
-        String blockDir = getPaddedBlockNumber(bucketSize * (blockNumber / bucketSize));
-        String dirName = Paths.get(streamingConfig.getFileStorageRoot(), blockDir).toString();
-
-        return dirName;
     }
 
     private byte[] getBodyHash() {
