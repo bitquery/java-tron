@@ -1,3 +1,11 @@
-./*
-!docker-entrypoint.sh
-
+.git/
+.github/
+.gradle
+.idea
+build
+logs
+output-directory
+streaming-directory
+.gitignore
+README.md
+Dockerfile
