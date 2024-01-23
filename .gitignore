@@ -47,6 +47,7 @@ src/main/resources/META-INF/
 /output-directory/
 
 /streaming-directory/
+/docker-compose/streaming/config-runtime/
 
 /output_manager/
 /output_witness/
