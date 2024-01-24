@@ -47,6 +47,7 @@ public class StreamingProcessor {
     }
 
     public void close() {
+        protobufMessage.close();
         kafkaBroker.close();
 
         logger.info("StreamingProcessor closed");

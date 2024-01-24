@@ -49,6 +49,10 @@ public class ProtobufMessage {
         fileStorage.store();
     }
 
+    public void close() {
+        fileStorage.close();
+    }
+
     public void sign() {
         prepareAuthenticator();
 
