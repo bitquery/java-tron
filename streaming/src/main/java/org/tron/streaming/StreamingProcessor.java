@@ -11,11 +11,13 @@ import org.tron.streaming.messages.ProtobufMessage;
 @Slf4j(topic = "streaming")
 public class StreamingProcessor {
     private final KafkaMessageBroker kafkaBroker;
+    private final ProtobufMessage protobufMessage;
     private final String topic;
     private final boolean topicEnabled;
 
     public StreamingProcessor(Config kafkaTopicConf) {
         this.kafkaBroker = new KafkaMessageBroker();
+        this.protobufMessage = new ProtobufMessage();
 
         this.topic = kafkaTopicConf.getString("topic");
         this.topicEnabled = kafkaTopicConf.getBoolean("enable");
@@ -38,10 +40,7 @@ public class StreamingProcessor {
         blockMsgDescriptor.setParentNumber(newBlock.getParentBlockId().getNum());
         blockMsgDescriptor.setChainId(CommonParameter.getInstance().getStreamingConfig().getChainId());
 
-        ProtobufMessage protobufMessage = new ProtobufMessage(blockMsgDescriptor, blockMessage.toByteArray(), topic);
-        protobufMessage.sign();
-        protobufMessage.store();
-
+        protobufMessage.process(blockMsgDescriptor, blockMessage.toByteArray(), topic);
         kafkaBroker.send(topic, protobufMessage);
 
         logger.info(String.format("Streaming processing took %s, Num: %d", timer.stop(), newBlock.getNum()));
