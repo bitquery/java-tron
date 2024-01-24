@@ -363,7 +363,10 @@ public class Args extends CommonParameter {
     PARAMETER.streamingConfig = new StreamingConfig();
     PARAMETER.streamingConfig.setEnable(StreamingConfig.getEnableFromConfig(streamingConfig));
     PARAMETER.streamingConfig.setChainId(streamingConfig.getString("chain_id"));
+
     PARAMETER.streamingConfig.setFileStorageRoot(StreamingConfig.getFileStorageFromConfig(streamingConfig));
+    PARAMETER.streamingConfig.setFileStorageTtlSecs(streamingConfig.getInt("file_storage.ttl_secs"));
+    PARAMETER.streamingConfig.setFileStoragePoolPeriodSec(streamingConfig.getInt("file_storage.pool_period_sec"));
     PARAMETER.streamingConfig.setFileStorageUrls(streamingConfig.getStringList("file_storage.urls"));
 
     PARAMETER.streamingConfig.setEllipticSignerPrivateKeyHex(streamingConfig.getString("elliptic_signer.private_key_hex"));

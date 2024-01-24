@@ -40,6 +40,14 @@ public class StreamingConfig {
 
     @Getter
     @Setter
+    private int fileStorageTtlSecs;
+
+    @Getter
+    @Setter
+    private int fileStoragePoolPeriodSec;
+
+    @Getter
+    @Setter
     private List<String> fileStorageUrls;
 
     /**
