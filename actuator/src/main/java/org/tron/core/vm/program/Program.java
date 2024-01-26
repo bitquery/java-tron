@@ -772,7 +772,7 @@ public class Program {
     DataWord energyLimit = this.getCreateEnergy(getEnergyLimitLeft());
     spendEnergy(energyLimit.longValue(), "internal call");
 
-    evmStartOrEnterTrace(
+    setEvmStartOrEnterTrace(
             senderAddress,
             newAddress,
             true,
@@ -870,7 +870,7 @@ public class Program {
     // 5. REFUND THE REMAIN Energy
     refundEnergyAfterVM(energyLimit, createResult);
 
-    evmEndOrExitTrace(createResult, getCurrentOpIntValue());
+    setEvmEndOrExitTrace(createResult, getCurrentOpIntValue());
   }
 
   public void refundEnergyAfterVM(DataWord energyLimit, ProgramResult result) {
@@ -1006,7 +1006,7 @@ public class Program {
       }
     }
 
-    evmStartOrEnterTrace(
+    setEvmStartOrEnterTrace(
             senderAddress,
             contextAddress,
             false,
@@ -1116,10 +1116,10 @@ public class Program {
       refundEnergy(msg.getEnergy().longValue(), "remaining energy from the internal call");
     }
     
-    evmEndOrExitTrace(callResult, msg.getOpCode());
+    setEvmEndOrExitTrace(callResult, msg.getOpCode());
   }
 
-  private void evmStartOrEnterTrace(byte[] from, byte[] to, boolean create, byte[] data, long gas, byte[] value, int opCode) {
+  private void setEvmStartOrEnterTrace(byte[] from, byte[] to, boolean create, byte[] data, long gas, byte[] value, int opCode) {
     String opcodeName = Op.getNameOf(opCode);
 
     byte[] code = getContractState().getCode(to);
@@ -1157,7 +1157,7 @@ public class Program {
     );
   }
  
-  private void evmEndOrExitTrace(ProgramResult callResult, int opCode) {
+  private void setEvmEndOrExitTrace(ProgramResult callResult, int opCode) {
     String opcodeName = Op.getNameOf(opCode);
 
     long energyUsed = 0;
@@ -1178,7 +1178,7 @@ public class Program {
     evmTraceCap.setCaptureExit(energyUsed, exception);
   }
 
-  public void addCaptureStateTrace(int opcodeNum, String opcodeName, long energy) {
+  public void addEvmCaptureStateTrace(int opcodeNum, String opcodeName, long energy) {
     Opcode opcode = getEvmTraceCap().opcode(opcodeNum, opcodeName);
 
     getEvmTraceCap().addCaptureState(
