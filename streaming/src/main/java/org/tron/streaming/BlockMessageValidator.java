@@ -1,9 +1,7 @@
 package org.tron.streaming;
 
-import com.google.protobuf.Empty;
 import evm_messages.BlockMessageOuterClass.Trace;
 import lombok.extern.slf4j.Slf4j;
-import org.tron.core.exception.BadBlockException;
 import org.tron.core.exception.StreamingMessageValidateException;
 import org.tron.protos.streaming.TronMessage;
 
@@ -36,14 +34,7 @@ public class BlockMessageValidator {
 
     private void internalTransactionsAndTraces(TronMessage.Transaction tx) throws StreamingMessageValidateException {
         int expectedCount = tx.getInternalTransactionsCount();
-        int actualCount = 0;
-
-        Trace trace = tx.getTrace();
-
-        if (trace.hasCaptureStart()) {
-            actualCount += 1;
-        }
-        actualCount += trace.getCallsCount();
+        int actualCount = tx.getTrace().getCallsCount();
 
         if (expectedCount != actualCount) {
             throw new StreamingMessageValidateException(

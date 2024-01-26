@@ -772,10 +772,9 @@ public class Program {
     DataWord energyLimit = this.getCreateEnergy(getEnergyLimitLeft());
     spendEnergy(energyLimit.longValue(), "internal call");
 
-    setEvmStartOrEnterTrace(
+    setEvmEnterTrace(
             senderAddress,
             newAddress,
-            true,
             programCode,
             energyLimit.longValue(),
             value.getNoLeadZeroesData(),
@@ -870,7 +869,7 @@ public class Program {
     // 5. REFUND THE REMAIN Energy
     refundEnergyAfterVM(energyLimit, createResult);
 
-    setEvmEndOrExitTrace(createResult, getCurrentOpIntValue());
+    setEvmExitTrace(createResult);
   }
 
   public void refundEnergyAfterVM(DataWord energyLimit, ProgramResult result) {
@@ -1006,10 +1005,9 @@ public class Program {
       }
     }
 
-    setEvmStartOrEnterTrace(
+    setEvmEnterTrace(
             senderAddress,
             contextAddress,
-            false,
             data,
             msg.getEnergy().longValue(),
             msg.getEndowment().getNoLeadZeroesData(),
@@ -1116,30 +1114,14 @@ public class Program {
       refundEnergy(msg.getEnergy().longValue(), "remaining energy from the internal call");
     }
     
-    setEvmEndOrExitTrace(callResult, msg.getOpCode());
+    setEvmExitTrace(callResult);
   }
 
-  private void setEvmStartOrEnterTrace(byte[] from, byte[] to, boolean create, byte[] data, long gas, byte[] value, int opCode) {
+  private void setEvmEnterTrace(byte[] from, byte[] to, byte[] data, long gas, byte[] value, int opCode) {
     String opcodeName = Op.getNameOf(opCode);
 
     byte[] code = getContractState().getCode(to);
     AddressCode addressCodeTo = evmTraceCap.addressCode(code);
-
-    if (opcodeName.contains("CALL") || opcodeName.contains("CREATE") || opcodeName.contains("CREATE2")) {
-      if (getCallDeep() == 0) {
-        evmTraceCap.setCaptureStart(
-                ByteString.copyFrom(from),
-                ByteString.copyFrom(to),
-                create,
-                ByteString.copyFrom(data),
-                gas,
-                ByteString.copyFrom(value),
-                addressCodeTo
-        );
-
-        return;
-      }
-    }
 
     Opcode opcode = Opcode.newBuilder()
             .setCode(opCode)
@@ -1157,9 +1139,7 @@ public class Program {
     );
   }
  
-  private void setEvmEndOrExitTrace(ProgramResult callResult, int opCode) {
-    String opcodeName = Op.getNameOf(opCode);
-
+  private void setEvmExitTrace(ProgramResult callResult) {
     long energyUsed = 0;
     RuntimeException exception = null;
     if (callResult != null) {
@@ -1167,15 +1147,30 @@ public class Program {
       exception = callResult.getException();
     }
 
-    if (opcodeName.contains("CALL") || opcodeName.contains("CREATE") || opcodeName.contains("CREATE2")) {
-      if (getCallDeep() == 0) {
-        evmTraceCap.setCaptureEnd(energyUsed, exception);
+    evmTraceCap.setCaptureExit(energyUsed, exception);
+  }
 
-        return;
-      }
+  public void setEvmCaptureStart(byte[] from, byte[] to, long gas) {
+    byte[] code = getContractState().getCode(to);
+    AddressCode addressCodeTo = evmTraceCap.addressCode(code);
+
+    getEvmTraceCap().setCaptureStart(
+            ByteString.copyFrom(from),
+            ByteString.copyFrom(to),
+            gas,
+            addressCodeTo
+    );
+  }
+
+  public void setEvmCaptureEnd(ProgramResult callResult) {
+    long energyUsed = 0;
+    RuntimeException exception = null;
+    if (callResult != null) {
+      energyUsed = callResult.getEnergyUsed();
+      exception = callResult.getException();
     }
 
-    evmTraceCap.setCaptureExit(energyUsed, exception);
+    evmTraceCap.setCaptureEnd(energyUsed, exception);
   }
 
   public void addEvmCaptureStateTrace(int opcodeNum, String opcodeName, long energy) {

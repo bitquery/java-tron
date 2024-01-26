@@ -188,6 +188,12 @@ public class VMActuator implements Actuator2 {
           throw e;
         }
 
+        program.setEvmCaptureStart(
+                context.getTrxCap().getOwnerAddress(),
+                program.getContractAddress().getData(),
+                program.getEnergylimitLeftLong()
+        );
+
         VM.play(program, OperationRegistry.getTable());
         result = program.getResult();
         evmTraceCap = program.getEvmTraceCap();
@@ -287,6 +293,7 @@ public class VMActuator implements Actuator2 {
     //use program returned fill context
     context.setProgramResult(result);
     context.setEvmTraceCapsule(evmTraceCap);
+    program.setEvmCaptureEnd(result);
 
     if (VMConfig.vmTrace() && program != null) {
       String traceContent = program.getTrace()

@@ -40,14 +40,14 @@ public class EvmTraceCapsule implements ProtoCapsule<Trace> {
         this.exitIndex = 0;
     }
 
-    public void setCaptureStart(ByteString from, ByteString to, boolean create, ByteString data, long energy, ByteString value, AddressCode addressCodeTo) {
+    public void setCaptureStart(ByteString from, ByteString to, long energy, AddressCode addressCodeTo) {
         CaptureStart captureStart = CaptureStart.newBuilder()
                 .setFrom(from)
                 .setTo(to)
-                .setCreate(create)
-                .setInput(data)
+//                .setCreate(create)
+//                .setInput(data)
                 .setGas(energy)
-                .setValue(value)
+//                .setValue(value)
                 .setToCode(addressCodeTo)
                 .build();
 
