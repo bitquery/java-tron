@@ -263,7 +263,7 @@ public class Program {
     Class<?> klass = null;
     EvmTraceCapsuleI instance = null;
     try {
-      klass = Class.forName("org.tron.streaming.EvmTraceCapsule");
+      klass = Class.forName("org.tron.streaming.NoEvmTraceCapsule");
       instance = (EvmTraceCapsuleI) klass.newInstance();
     } catch (java.lang.Exception e) {
       throw new RuntimeException(e);
