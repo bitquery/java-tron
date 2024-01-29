@@ -49,7 +49,7 @@ import org.tron.core.capsule.ContractStateCapsule;
 import org.tron.core.capsule.DelegatedResourceCapsule;
 import org.tron.core.capsule.VotesCapsule;
 import org.tron.core.capsule.WitnessCapsule;
-import org.tron.core.capsule.EvmTraceCapsule;
+import org.tron.core.capsule.EvmTraceCapsuleI;
 import org.tron.core.db.BandwidthProcessor;
 import org.tron.core.db.EnergyProcessor;
 import org.tron.core.exception.ContractExeException;
@@ -147,7 +147,7 @@ public class Program {
   private long callPenaltyEnergy;
   @Getter
   @Setter
-  private EvmTraceCapsule evmTraceCap;
+  private EvmTraceCapsuleI evmTraceCap;
 
   public Program(byte[] ops, byte[] codeAddress, ProgramInvoke programInvoke,
                  InternalTransaction internalTransaction) {
@@ -162,6 +162,8 @@ public class Program {
     this.contractState = setupProgramListener(new ContractState(programInvoke));
     this.trace = new ProgramTrace(programInvoke);
     this.nonce = internalTransaction.getNonce();
+
+    setEvmTrace();
   }
 
   static String formatBinData(byte[] binData, int startPC) {
@@ -255,6 +257,18 @@ public class Program {
     programListenerAware.setProgramListener(programListener);
 
     return programListenerAware;
+  }
+
+  public void setEvmTrace() {
+    Class<?> klass = null;
+    EvmTraceCapsuleI instance = null;
+    try {
+      klass = Class.forName("org.tron.streaming.EvmTraceCapsule");
+      instance = (EvmTraceCapsuleI) klass.newInstance();
+    } catch (java.lang.Exception e) {
+      throw new RuntimeException(e);
+    }
+    this.evmTraceCap = instance;
   }
 
   public Map<DataWord, DataWord> getStorageDiff() {

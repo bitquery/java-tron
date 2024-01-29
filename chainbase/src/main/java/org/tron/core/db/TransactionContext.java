@@ -4,6 +4,7 @@ import lombok.Data;
 import org.tron.common.runtime.ProgramResult;
 import org.tron.core.capsule.BlockCapsule;
 import org.tron.core.capsule.EvmTraceCapsule;
+import org.tron.core.capsule.EvmTraceCapsuleI;
 import org.tron.core.capsule.TransactionCapsule;
 import org.tron.core.store.StoreFactory;
 
@@ -16,7 +17,7 @@ public class TransactionContext {
   private ProgramResult programResult = new ProgramResult();
   private boolean isStatic;
   private boolean eventPluginLoaded;
-  private EvmTraceCapsule evmTraceCapsule = new EvmTraceCapsule();
+  private EvmTraceCapsuleI evmTraceCapsule;
 
   public TransactionContext(BlockCapsule blockCap, TransactionCapsule trxCap,
       StoreFactory storeFactory,

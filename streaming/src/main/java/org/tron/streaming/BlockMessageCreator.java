@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.tron.common.utils.ByteArray;
 import org.tron.core.actuator.TransactionFactory;
 import org.tron.core.capsule.BlockCapsule;
+import org.tron.core.capsule.EvmTraceCapsuleI;
 import org.tron.core.capsule.TransactionCapsule;
 import org.tron.protos.streaming.TronMessage.CancelUnfreezeV2Amount;
 import org.tron.protos.streaming.TronMessage.Staking;
@@ -92,7 +93,7 @@ public class BlockMessageCreator {
         int index = 0;
         for (TransactionInfo txInfo : txsInfo) {
             TransactionCapsule txCap = newBlock.getTransactions().get(index);
-            Trace evmTrace = txCap.getTrxTrace().getTransactionContext().getEvmTraceCapsule().getInstance();
+            EvmTraceCapsuleI evmTraceCapsule = txCap.getTrxTrace().getTransactionContext().getEvmTraceCapsule();
 
             TransactionHeader header = getTransactionHeader(txInfo, txCap, index);
             TransactionResult result = getTransactionResult(txInfo);
@@ -110,8 +111,11 @@ public class BlockMessageCreator {
                     .addAllContracts(contracts)
                     .addAllInternalTransactions(internalTransactions)
                     .setStaking(staking)
-                    .setTrace(evmTrace)
                     .build();
+
+            if (evmTraceCapsule != null) {
+                tx = tx.toBuilder().setTrace(evmTraceCapsule.getInstance()).build();
+            }
 
             this.blockMessage.addTransactions(tx).build();
 
