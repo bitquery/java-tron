@@ -28,7 +28,7 @@ public class BlockMessageValidator {
     public void transactions() throws StreamingMessageValidateException {
         for (TronMessage.Transaction tx : message.getTransactionsList()) {
             internalTransactionsAndTraces(tx);
-            logsAndCaptureStateLogs(tx);
+//            logsAndCaptureStateLogs(tx);
         }
     }
 

@@ -701,9 +701,9 @@ public class OperationActions {
 
     program.getResult().addLogInfo(logInfo);
 
-    byte[] code = program.getContractState().getCode(address.getData());
-    AddressCode addressCode = program.getEvmTraceCap().addressCode(code);
-    program.getEvmTraceCap().addLogToCaptureState(address.getData(), data, addressCode, topics);
+//    byte[] code = program.getContractState().getCode(address.getData());
+//    AddressCode addressCode = program.getEvmTraceCap().addressCode(code);
+//    program.getEvmTraceCap().addLogToCaptureState(address.getData(), data, addressCode, topics);
 
     program.step();
   }
