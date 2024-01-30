@@ -164,6 +164,9 @@ public class EvmTraceCapsule implements EvmTraceCapsuleI {
     @Override
     public void addLogToCaptureState(byte[] address, byte[] data, AddressCode addressCode, List<DataWord> topicsData) {
         int lastIndex = this.traceBuilder.getCaptureStatesCount() - 1;
+        if (lastIndex == -1) {
+            return;
+        }
 
         LogHeader logHeader = LogHeader.newBuilder()
                 .setAddress(ByteString.copyFrom(address))
@@ -195,6 +198,9 @@ public class EvmTraceCapsule implements EvmTraceCapsuleI {
     @Override
     public void addStorageToCaptureState(byte[] address, byte[] loc, byte[] value) {
         int lastIndex = this.traceBuilder.getCaptureStatesCount() - 1;
+        if (lastIndex == -1) {
+            return;
+        }
 
         Store store = Store.newBuilder()
                 .setAddress(ByteString.copyFrom(address))
