@@ -2,6 +2,7 @@ package io.bitquery.tron;
 
 import com.google.protobuf.ByteString;
 import evm_messages.BlockMessageOuterClass.Trace;
+import lombok.extern.slf4j.Slf4j;
 import org.tron.common.runtime.vm.DataWord;
 import evm_messages.BlockMessageOuterClass.Contract;
 import evm_messages.BlockMessageOuterClass.CaptureFault;
@@ -26,6 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Stack;
 
+@Slf4j
 public class EvmMessageBuilder {
     private Trace.Builder messageBuilder;
 
@@ -215,41 +217,45 @@ public class EvmMessageBuilder {
     }
 
     private void setCaptureEnter(ByteString from, ByteString to, ByteString data, long energy, ByteString value, Opcode opcode, AddressCode addressCodeTo) {
-        this.enterIndex += 1;
+        try {
+            this.enterIndex += 1;
 
-        CaptureEnter captureEnter = CaptureEnter.newBuilder()
-                .setOpcode(opcode)
-                .setFrom(from)
-                .setTo(to)
-                .setInput(data)
-                .setGas(energy)
-                .setValue(value)
-                .setToCode(addressCodeTo)
-                .build();
+            CaptureEnter captureEnter = CaptureEnter.newBuilder()
+                    .setOpcode(opcode)
+                    .setFrom(from)
+                    .setTo(to)
+                    .setInput(data)
+                    .setGas(energy)
+                    .setValue(value)
+                    .setToCode(addressCodeTo)
+                    .build();
 
-        int depth = 1;
-        int callerIndex = -1;
+            int depth = 1;
+            int callerIndex = -1;
 
-        if (this.call != null) {
-            depth = this.call.getDepth() + 1;
-            callerIndex = this.call.getIndex();
+            if (this.call != null) {
+                depth = this.call.getDepth() + 1;
+                callerIndex = this.call.getIndex();
+            }
+
+            this.call = Call.newBuilder()
+                    .setDepth(depth)
+                    .setCaptureEnter(captureEnter)
+                    .setCallerIndex(callerIndex)
+                    .setIndex(0)
+                    .setEnterIndex(this.enterIndex)
+                    .setExitIndex(this.exitIndex)
+                    .build();
+
+            int callsCount = this.messageBuilder.getCallsCount();
+            if (callsCount != 0) {
+                this.call = this.call.toBuilder().setIndex(callsCount).build();
+            }
+
+            this.messageBuilder.addCalls(this.call);
+        } catch (Exception e) {
+            logger.error("EvmMessageBuilder setCaptureEnter failed", e);
         }
-
-        this.call = Call.newBuilder()
-                .setDepth(depth)
-                .setCaptureEnter(captureEnter)
-                .setCallerIndex(callerIndex)
-                .setIndex(0)
-                .setEnterIndex(this.enterIndex)
-                .setExitIndex(this.exitIndex)
-                .build();
-
-        int callsCount = this.messageBuilder.getCallsCount();
-        if (callsCount != 0) {
-            this.call = this.call.toBuilder().setIndex(callsCount).build();
-        }
-
-        this.messageBuilder.addCalls(this.call);
     }
 
     private void setCaptureExit(long energyUsed, RuntimeException error) {
