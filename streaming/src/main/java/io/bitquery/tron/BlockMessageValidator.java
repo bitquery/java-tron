@@ -59,6 +59,8 @@ public class BlockMessageValidator {
                 .filter(x -> x.getLog().hasLogHeader())
                 .count();
 
+        logger.info("Status of transaction: {}", tx.getResult().getStatus());
+
         if (expectedCount != actualCount) {
             throw new BlockMessageValidateException(
                     String.format(
