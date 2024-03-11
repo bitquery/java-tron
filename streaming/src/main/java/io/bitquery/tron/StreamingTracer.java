@@ -92,11 +92,12 @@ public class StreamingTracer implements Tracer {
     public void transactionEnd(Message protobufResultMessage, boolean isPending) {
         try {
             TransactionInfo txInfo = TransactionInfo.parseFrom(protobufResultMessage.toByteArray());
-            currentTransaction.get().buildTxEndMessage(txInfo);
+            EvmMessageBuilder trace = currentTrace.get();
 
-            checkLogs();
+            currentTransaction.get().buildTxEndMessage(txInfo, trace.getCollectedLogs());
+            currentTransaction.get().addTrace(trace.getMessage());
 
-            currentTransaction.get().addTrace(currentTrace.get().getMessage());
+//            checkLogs();
 
             if (isPending) {
                 long nanoseconds = Instant.now().toEpochMilli() * 1_000_000L;
@@ -197,14 +198,14 @@ public class StreamingTracer implements Tracer {
         }
     }
 
-    private void checkLogs() {
-        int initialLogsCount = currentTransaction.get().getMessage().getContracts(0).getLogsCount();
-        int collectedLogsCount = currentTrace.get().getLogsCount();
+//    private void checkLogs(int initialLogsCount, int collectedLogsCount) {
+//        int initialLogsCount = currentTransaction.get().getMessage().getContracts(0).getLogsCount();
+//        int collectedLogsCount = currentTrace.get().getLogsCount();
 
-        if (initialLogsCount == 0 && initialLogsCount != collectedLogsCount) {
-            currentTrace.get().addRemovedFlagToLogs();
-        }
-    }
+//        if (initialLogsCount == 0 && initialLogsCount != collectedLogsCount) {
+//            currentTransaction.get().addRemovedFlagToLogs();
+//        }
+//    }
 
     private Descriptor getDescriptor(String type) {
         TronMessage.BlockHeader blockMsgHeader = currentBlock.get().getMessage().getHeader();
