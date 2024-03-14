@@ -94,22 +94,6 @@ public class VM {
           /* exec op action */
           op.execute(program);
 
-          if (program.getResult().getException() != null) {
-            TracerManager.getTracer().captureFault(
-                    op.getOpcode(),
-                    opName,
-                    energy,
-                    program.getStack(),
-                    program.getCallerAddress().getData(),
-                    program.getContractAddress().getData(),
-                    program.getCallValue().getData(),
-                    program.getPC(),
-                    program.getMemory(),
-                    program.getCallDeep(),
-                    program.getResult().getException()
-            );
-          }
-
           program.setPreviouslyExecutedOp((byte) op.getOpcode());
         } catch (RuntimeException e) {
           logger.info("VM halted: [{}]", e.getMessage());
@@ -118,6 +102,23 @@ public class VM {
           }
           //program.resetFutureRefund();
           program.stop();
+
+          TracerManager.getTracer().captureFault(
+                  op.getOpcode(),
+                  opName,
+                  program.getEnergylimitLeftLong(),
+                  program.getStack(),
+                  program.getCallerAddress().getData(),
+                  program.getContractAddress().getData(),
+                  program.getCallValue().getData(),
+                  program.getPC(),
+                  program.getMemory(),
+                  program.getCallDeep(),
+                  e
+          );
+
+          TracerManager.getTracer().captureEnd(program.getEnergylimitLeftLong(), e);
+
           throw e;
         } finally {
           program.fullTrace();
