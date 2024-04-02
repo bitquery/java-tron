@@ -260,6 +260,10 @@ public class EvmMessageBuilder {
             captureEnterBuilder.setTokenId(tokenId);
         }
 
+        if (this.call != null && !this.call.hasCaptureExit()) {
+            logger.warn("The new call was initiated before exiting the current call and will be overwritten. Call: {}", this.call);
+        }
+
         int depth = 1;
         int callerIndex = -1;
 
@@ -299,9 +303,14 @@ public class EvmMessageBuilder {
             return;
         }
 
+        if (this.call.hasCaptureExit()) {
+            logger.warn("Current Call already has captureExit event. It will be overwritten!, call: {}", this.call);
+        }
+
         // Add captureExit to already existed call record.
-        Call callWithExit = this.call.toBuilder().setCaptureExit(captureExit).build();
-        this.messageBuilder.setCalls(this.call.getIndex(), callWithExit);
+        this.call = this.call.toBuilder().setCaptureExit(captureExit).build();
+
+        this.messageBuilder.setCalls(this.call.getIndex(), this.call);
 
         int callerIndex = this.call.getCallerIndex();
         if (callerIndex >= 0) {
