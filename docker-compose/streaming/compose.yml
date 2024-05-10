@@ -10,12 +10,6 @@ x-common-restart: &common-restart
 x-graceful-stop: &graceful-stop
   stop_grace_period: 1m
   stop_signal: SIGINT
-x-elk-logging: &elk-logging
-  logging:
-    driver: gelf
-    options:
-      gelf-address: udp://logstash.services.local:12201
-      labels: __log_type
 x-common-logging: &common-logging
   logging:
     driver: "json-file"
@@ -132,13 +126,10 @@ services:
         condition: service_completed_successfully
       nginx:
         condition: service_started
-    # labels:
-    #   - __log_type=java-tron-streaming
     <<:
       [
         *common-network,
         *graceful-stop,
-        # *elk-logging
       ]
   exporter:
     image: ${LC_COMPOSE_EXPORTER_IMAGE}:${LC_COMPOSE_EXPORTER_IMAGE_TAG}
