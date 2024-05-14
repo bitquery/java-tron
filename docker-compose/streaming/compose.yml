@@ -146,7 +146,7 @@ services:
 
 networks:
   common:
-    external: ${LC_COMPOSE_NETWORK_EXTERNAL:-false}
+    external: ${LC_COMPOSE_NETWORK_EXTERNAL:-true}
     name: "${LC_COMPOSE_NETWORK_ID:-bridge-lan}"
 
 volumes:
